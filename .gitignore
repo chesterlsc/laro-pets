@@ -10,3 +10,5 @@ test-results
 _src
 tsconfig.tsbuildinfo
 next-env.d.ts
+
+.data
