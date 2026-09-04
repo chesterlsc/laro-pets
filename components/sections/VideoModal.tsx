@@ -80,7 +80,8 @@ export function DemoCard({ image, label, time, caption, captionClass, className,
   image: ImageKey; label: string; time: string; caption: ReactNode; captionClass: string; className: string; sizes: string; priority?: boolean; 'aria-label': string;
 }) {
   return (
-    <OpenDemo aria-label={ariaLabel} className={`relative block cursor-pointer overflow-hidden rounded-card bg-[#222] text-left ${className}`}>
+    <OpenDemo className={`relative block cursor-pointer overflow-hidden rounded-card bg-[#222] text-left ${className}`}>
+      <span className="sr-only">{ariaLabel}. </span>
       <Image src={images[image].src} alt={images[image].alt} fill sizes={sizes} priority={priority} className="object-cover" />
       <span className="absolute top-[14px] left-[14px] rounded-full bg-white/92 px-[10px] py-[6px] text-[12px] font-extrabold uppercase tracking-[0.06em] text-ink">{label}</span>
       <span className="absolute top-[14px] right-[14px] rounded-full bg-black/60 px-[9px] py-[5px] text-[12px] font-bold text-white">{time}</span>

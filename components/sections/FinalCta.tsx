@@ -10,7 +10,7 @@ export function FinalCta() {
         <div className="flex flex-col items-stretch xl:flex-row xl:items-center xl:justify-between gap-6">
           <div className="flex flex-col gap-2">
             <h2 className="text-[30px] xl:text-[40px] text-white">{c.h2}</h2>
-            <p className="text-[15px] xl:text-[17px] text-white/90">{c.p}</p>
+            <p className="text-[15px] xl:text-[17px] text-white">{c.p}</p>
           </div>
           <ButtonLink href="/checkout" variant="ink" size="lg" icon="cart" className="w-full xl:w-auto">
             {c.button}

@@ -46,7 +46,6 @@ test('one h1, section h2s in spec wording, no third-party logos or emoji', async
   for (const h of ['Twenty seconds. One very serious cat.', 'Press once. The mat does the rest.', 'Pick your bundle', 'Cat parents from QC to Davao', 'We took the risk off you', 'Specs', 'Questions cat parents ask', 'Ready for the pounce?']) {
     await expect(page.getByRole('heading', { level: 2, name: h, exact: true })).toHaveCount(1);
   }
-  const html = await page.content();
   expect(await page.locator("body").innerText()).not.toMatch(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u);
   expect(await page.locator('img[src*="logo"], img[alt*="GCash"], img[alt*="Visa"]').count()).toBe(0);
 });

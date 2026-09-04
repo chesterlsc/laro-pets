@@ -20,8 +20,8 @@ export function Header() {
           <div className="hidden lg:block">
             <ButtonLink href="/checkout" size="md">{copy.header.buyNow}</ButtonLink>
           </div>
-          <Link href="/checkout" aria-label="Cart" className="-mr-2 flex h-11 w-11 items-center justify-center text-ink">
-            <span className="relative"><Icon name="cart" size={26} /><CartBadge /></span>
+          <Link href="/checkout" className="-mr-2 flex h-11 w-11 items-center justify-center text-ink">
+            <span className="sr-only">Cart</span><span className="relative"><Icon name="cart" size={26} /><CartBadge /></span>
           </Link>
         </div>
       </div>

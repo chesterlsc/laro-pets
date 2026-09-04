@@ -3,10 +3,10 @@ import { copy } from '@/content/copy';
 import { ugc, ugcSlotHooks } from '@/content/ugc';
 import { DemoButton, DemoCard } from './VideoModal';
 
-const ugcCard = 'flex flex-col gap-[10px] rounded-inner border border-white/35 bg-white/8 p-4';
+const ugcCard = 'flex flex-col gap-[10px] rounded-inner border border-white/35 bg-ink/10 p-4';
 const ugcLabel = 'text-[11px] font-extrabold uppercase tracking-[0.12em] text-accent2';
 const ugcHook = 'font-display text-[16px] font-semibold leading-[1.3] text-white xl:text-[18px]';
-const ugcMeta = 'text-[12px] text-white/70';
+const ugcMeta = 'text-[12px] text-white/80';
 
 export function SeeItInAction() {
   const { action } = copy;
