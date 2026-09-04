@@ -1,6 +1,7 @@
 // Order persistence. Backend picked once from env: Supabase → webhook (write-only) → local JSON file.
 import { randomInt, randomUUID } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { createClient } from '@supabase/supabase-js';
 import { product, tierById, type Print, type TierId } from '@/content/product';
@@ -57,7 +58,10 @@ function webhookStore(url: string): Store {
 }
 
 function fileStore(): Store {
-  const file = path.join(process.cwd(), '.data', 'orders.json');
+  // On Vercel the project dir is read-only, so fall back to the ephemeral /tmp — orders survive only
+  // until the function is recycled. Configure SUPABASE_* or ORDERS_WEBHOOK_URL before taking real orders.
+  const dir = process.env.VERCEL ? path.join(os.tmpdir(), 'laro-orders') : path.join(process.cwd(), '.data');
+  const file = path.join(dir, 'orders.json');
   const readAll = async (): Promise<Order[]> => { try { return JSON.parse(await readFile(file, 'utf8')); } catch { return []; } };
   const writeAll = async (rows: Order[]) => { await mkdir(path.dirname(file), { recursive: true }); await writeFile(file, JSON.stringify(rows, null, 2)); };
   return {
@@ -76,7 +80,7 @@ function getStore(): Store {
   const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ORDERS_WEBHOOK_URL } = process.env;
   if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) store = supabaseStore(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
   else if (ORDERS_WEBHOOK_URL) store = webhookStore(ORDERS_WEBHOOK_URL);
-  else { console.warn('[orders] no SUPABASE_* or ORDERS_WEBHOOK_URL — writing to .data/orders.json'); store = fileStore(); }
+  else { console.warn(`[orders] no SUPABASE_* or ORDERS_WEBHOOK_URL — writing to ${process.env.VERCEL ? 'EPHEMERAL /tmp (orders will be lost!)' : '.data/orders.json'}`); store = fileStore(); }
   return store;
 }
 
