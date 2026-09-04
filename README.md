@@ -231,11 +231,11 @@ Preview deployments get the same env vars; use test PayMongo keys there.
 
 ## Definition of done
 
-- [ ] `pnpm install && pnpm dev` runs; `pnpm build` passes with zero type errors and zero ESLint errors.
-- [ ] `/` matches the mockup at 390 and 1440 (spacing, order, copy, colours).
-- [ ] `pnpm test` green — every row of the pricing table above.
-- [ ] `pnpm test:e2e` green — Mat + Refill → checkout → COD → thank-you page with order number and ₱899.
-- [ ] PayMongo test-mode session creates and the webhook marks an order paid.
-- [ ] Dev banner lists every unfilled placeholder; `pnpm build` logs them.
-- [ ] Lighthouse mobile ≥ 90 Performance / 95 Accessibility / 95 SEO; no console errors; no third-party logos; no emoji.
+- [x] `pnpm install && pnpm dev` runs; `pnpm build` passes with zero type errors and zero ESLint errors. *(verified 2026-09-04)*
+- [x] `/` matches the mockup at 390 and 1440 (spacing, order, copy, colours). *(full-page screenshots compared side by side; `node scripts/shots.mjs <dir>` regenerates them)*
+- [x] `pnpm test` green — every row of the pricing table above. *(26 tests)*
+- [x] `pnpm test:e2e` green — Mat + Refill → checkout → COD → thank-you page with order number and ₱899. *(plus video modal, sticky bar, FAQ, heading/emoji/logo checks)*
+- [ ] PayMongo test-mode session creates and the webhook marks an order paid. *(signature verification is unit-tested; the live session needs your `sk_test_` key — see Checkout & payments)*
+- [x] Dev banner lists every unfilled placeholder; `pnpm build` logs them.
+- [x] Lighthouse mobile ≥ 90 Performance / 95 Accessibility / 95 SEO; no console errors; no third-party logos; no emoji. *(production build, 2026-09-04: 98 / 100 / 100 / 100, LCP 2.3 s, CLS 0, TBT 20 ms, 433 KiB)*
 - [ ] This README kept current when env vars, prices or content files change.
