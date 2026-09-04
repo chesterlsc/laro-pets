@@ -16,6 +16,7 @@ const YELLOW = '#FFC857';
 
 export default async function Image() {
   // ponytail: system sans (Satori's bundled Noto Sans) — fetching Fredoka/Nunito TTFs at build is flaky.
+  // "PHP" instead of ₱: Satori has no glyph for U+20B1 without a bundled font file.
   const jpg = await readFile(join(process.cwd(), 'public', images.heroWhite.src));
   const hero = `data:image/jpeg;base64,${jpg.toString('base64')}`;
 
@@ -33,7 +34,7 @@ export default async function Image() {
             </span>
           </div>
           <div style={{ marginTop: 28, fontSize: 28, fontWeight: 700, color: TEAL }}>
-            ₱{product.prices.solo} · COD · free shipping on ₱{product.shipping.freeFrom}+
+            {`PHP ${product.prices.solo} · COD · free shipping on PHP ${product.shipping.freeFrom}+`}
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', marginTop: 'auto', color: TEAL }}>
             <span style={{ fontSize: 40, fontWeight: 700, letterSpacing: -1 }}>laro</span>

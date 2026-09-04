@@ -54,7 +54,7 @@ export function OrderStep() {
           <button type="button" aria-label="Add a refill pack" disabled={cart.extraRefills >= product.limits.maxExtraRefills} onClick={() => { setExtraRefills(cart.extraRefills + 1); track('add_refill', { count: cart.extraRefills + 1 }); }} className="flex size-11 items-center justify-center rounded-full border-2 border-cta bg-white text-cta disabled:opacity-40">
             <Icon name="plus" />
           </button>
-          <span className="ml-2 font-display text-[22px] font-bold">{copy.bundles.addon.plus}</span>
+          <span className="ml-2 whitespace-nowrap font-display text-[22px] font-bold">{copy.bundles.addon.plus}</span>
         </div>
       </div>
 
