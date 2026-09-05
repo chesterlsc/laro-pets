@@ -55,7 +55,6 @@ export function VideoModalProvider({ children }: { children: ReactNode }) {
           </button>
           <video ref={video} controls playsInline preload="none" poster={images.videoPounce.src} width={product.demoVideo.width} height={product.demoVideo.height} className="block h-auto rounded-card bg-black" style={{ width: 'min(92vw, calc(min(90vh, 1440px) * 0.75))', maxHeight: 'min(90vh, 1440px)', aspectRatio: '3 / 4' }}>
             <source src={product.demoVideo.src} type="video/mp4" />
-            <source src={product.demoVideo.fallbackSrc} type="video/mp4" />
           </video>
         </div>
       )}

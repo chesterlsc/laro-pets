@@ -26,6 +26,10 @@ describe('order schema', () => {
     expect(orderSchema.safeParse({ ...base, tier: 'multi' }).success).toBe(false);
     expect(orderSchema.safeParse({ ...base, tier: 'multi', prints: ['fish', 'duck'] }).success).toBe(true);
   });
+  it('rejects a filled honeypot', () => {
+    expect(orderSchema.safeParse({ ...base, website: '' }).success).toBe(true);
+    expect(orderSchema.safeParse({ ...base, website: 'http://spam.example' }).success).toBe(false);
+  });
   it('rejects bad zip / refills / mobile', () => {
     expect(orderSchema.safeParse({ ...base, address: { ...base.address, zip: '110' } }).success).toBe(false);
     expect(orderSchema.safeParse({ ...base, extraRefills: 4 }).success).toBe(false);
@@ -40,13 +44,18 @@ it('order numbers look like LP-YYMMDD-XXXX', () => {
 describe('paymongo signature', () => {
   const secret = 'whsk_test_secret';
   const body = '{"data":{"id":"evt_1"}}';
-  const t = '1700000000';
+  const now = 1_700_000_000_000;
+  const t = String(now / 1000);
   const sig = createHmac('sha256', secret).update(`${t}.${body}`).digest('hex');
-  it('accepts a valid test signature', () => expect(verifyWebhookSignature(body, `t=${t},te=${sig},li=`, secret)).toBe(true));
-  it('accepts a valid live signature', () => expect(verifyWebhookSignature(body, `t=${t},te=,li=${sig}`, secret)).toBe(true));
+  it('accepts a valid test signature', () => expect(verifyWebhookSignature(body, `t=${t},te=${sig},li=`, secret, now)).toBe(true));
+  it('accepts a valid live signature', () => expect(verifyWebhookSignature(body, `t=${t},te=,li=${sig}`, secret, now)).toBe(true));
   it('rejects tampered body / missing header', () => {
-    expect(verifyWebhookSignature(body + ' ', `t=${t},te=${sig},li=`, secret)).toBe(false);
-    expect(verifyWebhookSignature(body, null, secret)).toBe(false);
-    expect(verifyWebhookSignature(body, `t=${t},te=${sig},li=`, undefined)).toBe(false);
+    expect(verifyWebhookSignature(body + ' ', `t=${t},te=${sig},li=`, secret, now)).toBe(false);
+    expect(verifyWebhookSignature(body, null, secret, now)).toBe(false);
+    expect(verifyWebhookSignature(body, `t=${t},te=${sig},li=`, secret, undefined as unknown as number)).toBe(false);
+  });
+  it('rejects a stale timestamp (replay)', () => {
+    expect(verifyWebhookSignature(body, `t=${t},te=${sig},li=`, secret, now + 6 * 60 * 1000)).toBe(false);
+    expect(verifyWebhookSignature(body, `t=${t},te=${sig},li=`, secret, now + 4 * 60 * 1000)).toBe(true);
   });
 });

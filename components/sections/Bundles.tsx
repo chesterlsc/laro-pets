@@ -120,7 +120,7 @@ export function Bundles() {
         </div>
 
         <div className="flex flex-col items-center gap-3">
-          <ButtonLink href="/checkout" variant="ink" icon="arrow" className="w-full md:w-auto" onClick={() => track('begin_checkout', { value: q.total })}>
+          <ButtonLink href="/checkout" variant="ink" icon="arrow" className="w-full md:w-auto">
             {b.cta}
           </ButtonLink>
           <span className="text-center text-[13px] text-muted">{b.ctaNote}</span>

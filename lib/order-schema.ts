@@ -35,6 +35,8 @@ export const orderSchema = z
     }),
     notes: z.string().trim().max(300, 'Keep notes under 300 characters').optional(),
     paymentMethod: z.enum(['cod', 'gcash', 'maya', 'card']),
+    // Honeypot: hidden field humans never fill. Bots that do get a plain validation error.
+    website: z.literal('').optional(),
   })
   .refine((o) => o.prints.length === tierById(o.tier).mats, { path: ['prints'], message: 'Choose a print for each mat' });
 

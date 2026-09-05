@@ -1,7 +1,6 @@
 // Order persistence. Backend picked once from env: Supabase → webhook (write-only) → local JSON file.
 import { randomInt, randomUUID } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import os from 'node:os';
 import path from 'node:path';
 import { createClient } from '@supabase/supabase-js';
 import { product, tierById, type Print, type TierId } from '@/content/product';
@@ -16,7 +15,7 @@ export type Order = {
   status: OrderStatus;
   customer: { name: string; mobile: string; email?: string };
   address: OrderInput['address'];
-  items: { tier: TierId; mats: number; prints: Print[]; extraRefills: number };
+  items: { tier: TierId; mats: number; prints: Print[]; extraRefills: number; unitPrice?: number; refillPrice?: number };
   subtotal: number;
   shipping: number;
   total: number;
@@ -29,6 +28,10 @@ type Store = {
   insert(o: Order): Promise<void>;
   get(id: string): Promise<Order | null>;
   update(id: string, patch: Partial<Order>): Promise<Order | null>;
+  /** Update only while the row is still in `expect` status; null when it is not (already handled). */
+  updateWhere(id: string, patch: Partial<Order>, expect: OrderStatus): Promise<Order | null>;
+  /** Most recent pending COD order from this mobile since `sinceIso`, or null. */
+  findRecentCod(mobile: string, sinceIso: string): Promise<Order | null>;
 };
 
 const cache = new Map<string, Order>();
@@ -40,13 +43,18 @@ function supabaseStore(url: string, key: string): Store {
     async insert(o) { fail((await sb.from('orders').insert(o)).error); },
     async get(id) { const r = await sb.from('orders').select('*').eq('id', id).maybeSingle(); fail(r.error); return (r.data as Order | null) ?? null; },
     async update(id, patch) { const r = await sb.from('orders').update(patch).eq('id', id).select('*').maybeSingle(); fail(r.error); return (r.data as Order | null) ?? null; },
+    async updateWhere(id, patch, expect) { const r = await sb.from('orders').update(patch).eq('id', id).eq('status', expect).select('*').maybeSingle(); fail(r.error); return (r.data as Order | null) ?? null; },
+    async findRecentCod(mobile, sinceIso) {
+      const r = await sb.from('orders').select('*').eq('status', 'pending_cod').eq('customer->>mobile', mobile).gte('created_at', sinceIso).order('created_at', { ascending: false }).limit(1).maybeSingle();
+      fail(r.error); return (r.data as Order | null) ?? null;
+    },
   };
 }
 
 // ponytail: webhook backend is write-only (Sheets/Zapier); reads come from the in-process cache, which is empty after a restart.
 function webhookStore(url: string): Store {
   const post = async (o: Order, event: string) => {
-    const res = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ event, ...o }) });
+    const res = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ event, ...o }), signal: AbortSignal.timeout(10_000) });
     if (!res.ok) throw new Error(`Orders webhook ${res.status}`);
     cache.set(o.id, o);
   };
@@ -54,14 +62,14 @@ function webhookStore(url: string): Store {
     insert: (o) => post(o, 'order.created'),
     get: async (id) => cache.get(id) ?? null,
     async update(id, patch) { const cur = cache.get(id); if (!cur) return null; const next = { ...cur, ...patch }; await post(next, 'order.updated'); return next; },
+    async updateWhere(id, patch, expect) { const cur = cache.get(id); if (!cur || cur.status !== expect) return null; const next = { ...cur, ...patch }; await post(next, 'order.updated'); return next; },
+    async findRecentCod(mobile, sinceIso) { return [...cache.values()].filter((o) => o.status === 'pending_cod' && o.customer.mobile === mobile && o.created_at >= sinceIso).pop() ?? null; },
   };
 }
 
+// Local development / e2e only — never used on Vercel (getStore throws instead).
 function fileStore(): Store {
-  // On Vercel the project dir is read-only, so fall back to the ephemeral /tmp — orders survive only
-  // until the function is recycled. Configure SUPABASE_* or ORDERS_WEBHOOK_URL before taking real orders.
-  const dir = process.env.VERCEL ? path.join(os.tmpdir(), 'laro-orders') : path.join(process.cwd(), '.data');
-  const file = path.join(dir, 'orders.json');
+  const file = path.join(process.cwd(), '.data', 'orders.json');
   const readAll = async (): Promise<Order[]> => { try { return JSON.parse(await readFile(file, 'utf8')); } catch { return []; } };
   const writeAll = async (rows: Order[]) => { await mkdir(path.dirname(file), { recursive: true }); await writeFile(file, JSON.stringify(rows, null, 2)); };
   return {
@@ -71,8 +79,16 @@ function fileStore(): Store {
       const rows = await readAll(); const i = rows.findIndex((o) => o.id === id); if (i < 0) return null;
       rows[i] = { ...rows[i], ...patch }; await writeAll(rows); return rows[i];
     },
+    async updateWhere(id, patch, expect) {
+      const rows = await readAll(); const i = rows.findIndex((o) => o.id === id); if (i < 0 || rows[i].status !== expect) return null;
+      rows[i] = { ...rows[i], ...patch }; await writeAll(rows); return rows[i];
+    },
+    async findRecentCod(mobile, sinceIso) { return (await readAll()).filter((o) => o.status === 'pending_cod' && o.customer.mobile === mobile && o.created_at >= sinceIso).pop() ?? null; },
   };
 }
+
+/** True only for Supabase — the one backend that can be read back (thank-you page, PayMongo webhook). */
+export const isDurableStore = () => !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
 
 let store: Store | undefined;
 function getStore(): Store {
@@ -80,7 +96,8 @@ function getStore(): Store {
   const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ORDERS_WEBHOOK_URL } = process.env;
   if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) store = supabaseStore(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
   else if (ORDERS_WEBHOOK_URL) store = webhookStore(ORDERS_WEBHOOK_URL);
-  else { console.warn(`[orders] no SUPABASE_* or ORDERS_WEBHOOK_URL — writing to ${process.env.VERCEL ? 'EPHEMERAL /tmp (orders will be lost!)' : '.data/orders.json'}`); store = fileStore(); }
+  else if (process.env.VERCEL) throw new Error('Configure SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (or ORDERS_WEBHOOK_URL for COD-only) before taking orders');
+  else { console.warn('[orders] no SUPABASE_* or ORDERS_WEBHOOK_URL — writing to .data/orders.json (dev only)'); store = fileStore(); }
   return store;
 }
 
@@ -101,30 +118,38 @@ export async function createOrder(input: OrderInput, status: OrderStatus): Promi
     status,
     customer: input.customer,
     address: input.address,
-    items: { tier: input.tier, mats: tierById(input.tier).mats, prints: input.prints, extraRefills: input.extraRefills },
+    // Unit prices are frozen at order time so a later price change never rewrites an old order.
+    items: { tier: input.tier, mats: tierById(input.tier).mats, prints: input.prints, extraRefills: input.extraRefills, unitPrice: tierById(input.tier).price, refillPrice: product.prices.refill },
     subtotal, shipping, total,
     payment_method: input.paymentMethod,
     payment_ref: null,
     notes: input.notes || null,
   };
-  await getStore().insert(order);
+  try {
+    await getStore().insert(order);
+  } catch (e) {
+    // 36^4 order numbers per day: retry once on a unique-violation collision, otherwise rethrow.
+    if (!/order_no|duplicate|23505/i.test(String(e))) throw e;
+    order.order_no = generateOrderNo();
+    await getStore().insert(order);
+  }
   return order;
 }
 
-export const getOrder = (id: string) => getStore().get(id);
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export const getOrder = async (id: string) => (UUID.test(id) ? getStore().get(id) : null);
 
-export async function markPaid(id: string, paymentRef: string): Promise<Order | null> {
-  const cur = await getStore().get(id);
-  if (!cur) return null;
-  if (cur.status === 'paid') return cur;
-  return getStore().update(id, { status: 'paid', payment_ref: paymentRef });
-}
+/** Marks a pending_payment order paid; null when it was already paid/cancelled (idempotent, race-safe). */
+export const markPaid = (id: string, paymentRef: string) => getStore().updateWhere(id, { status: 'paid', payment_ref: paymentRef }, 'pending_payment');
+export const markCancelled = (id: string) => getStore().updateWhere(id, { status: 'cancelled' }, 'pending_payment');
+export const setPaymentRef = (id: string, ref: string) => getStore().update(id, { payment_ref: ref });
+export const findRecentCod = (mobile: string, minutes: number) => getStore().findRecentCod(mobile, new Date(Date.now() - minutes * 60_000).toISOString());
 
 /** Human-readable lines shared by emails, PayMongo and the thank-you page. Amounts in pesos per unit. */
 export function lineItems(o: Order): { name: string; amount: number; quantity: number }[] {
   const tier = tierById(o.items.tier);
-  const lines: { name: string; amount: number; quantity: number }[] = [{ name: `${tier.name} — ${product.name} (${o.items.prints.join(', ')} print)`, amount: tier.price, quantity: 1 }];
-  if (o.items.extraRefills > 0) lines.push({ name: '3-feather refill pack', amount: product.prices.refill, quantity: o.items.extraRefills });
+  const lines: { name: string; amount: number; quantity: number }[] = [{ name: `${tier.name} — ${product.name} (${o.items.prints.join(', ')} print)`, amount: o.items.unitPrice ?? tier.price, quantity: 1 }];
+  if (o.items.extraRefills > 0) lines.push({ name: '3-feather refill pack', amount: o.items.refillPrice ?? product.prices.refill, quantity: o.items.extraRefills });
   if (o.shipping > 0) lines.push({ name: 'Shipping', amount: o.shipping, quantity: 1 });
   return lines;
 }

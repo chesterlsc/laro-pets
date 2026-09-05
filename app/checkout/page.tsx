@@ -5,6 +5,7 @@ import { Container } from '@/components/ui';
 import { DeliveryForm } from '@/components/checkout/DeliveryForm';
 import { OrderStep } from '@/components/checkout/OrderStep';
 import { OrderSummary } from '@/components/checkout/OrderSummary';
+import { Footer } from '@/components/sections/Footer';
 
 export const metadata: Metadata = { title: 'Checkout', robots: { index: false } };
 
@@ -40,6 +41,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
           </div>
         </Container>
       </main>
+      <Footer />
     </>
   );
 }

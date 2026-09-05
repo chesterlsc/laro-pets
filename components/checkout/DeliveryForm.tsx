@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type FormEvent, type InputHTMLAttributes } from 'react';
 import { Icon } from '@/components/icons';
@@ -51,7 +52,7 @@ export function DeliveryForm() {
       tier: cart.tier, extraRefills: cart.extraRefills, prints: cart.prints,
       customer: { name: s('customer.name'), mobile: s('customer.mobile'), email: s('customer.email') },
       address: { line1: s('address.line1'), barangay: s('address.barangay'), city: s('address.city'), province: s('address.province'), zip: s('address.zip') },
-      notes: s('notes'), paymentMethod: method,
+      notes: s('notes'), paymentMethod: method, website: s('website'),
     };
     const parsed = orderSchema.safeParse(payload);
     if (!parsed.success) {
@@ -77,7 +78,7 @@ export function DeliveryForm() {
 
   const pay = METHODS.find((m) => m.id === method)!;
   return (
-    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-6">
+    <form onSubmit={onSubmit} noValidate className="relative flex flex-col gap-6">
       <div className="grid gap-4 md:grid-cols-2">
         <Field name="customer.name" label="Full name" autoComplete="name" required error={errors['customer.name']} className="md:col-span-2" />
         <Field name="customer.mobile" label="Mobile number" type="tel" inputMode="tel" autoComplete="tel" placeholder="09XX XXX XXXX" required error={errors['customer.mobile']} />
@@ -89,6 +90,8 @@ export function DeliveryForm() {
         <Field name="address.zip" label="ZIP" inputMode="numeric" pattern="[0-9]*" maxLength={4} autoComplete="postal-code" required error={errors['address.zip']} />
         <Field name="notes" label="Delivery notes (optional)" textarea maxLength={300} error={errors.notes} className="md:col-span-2" />
       </div>
+      {/* Honeypot — hidden from people, filled by bots; the API rejects any value. */}
+      <div aria-hidden="true" className="absolute -left-[9999px] h-px w-px overflow-hidden"><label>Website<input name="website" type="text" tabIndex={-1} autoComplete="off" /></label></div>
 
       <fieldset className="m-0 rounded-card border-2 border-border p-5">
         <legend className="px-2 font-display text-[18px] font-bold">Payment method</legend>
@@ -100,11 +103,12 @@ export function DeliveryForm() {
             </label>
           ))}
         </div>
-        <p className="mt-3 flex items-center gap-[6px] text-[13px] text-muted"><Icon name="lock" size={16} />Secured by PayMongo</p>
+        {method !== 'cod' && <p className="mt-3 flex items-center gap-[6px] text-[13px] text-muted"><Icon name="lock" size={16} />Secured by PayMongo</p>}
       </fieldset>
 
       {serverError && <div role="alert" className="rounded-inner border-2 border-cta bg-tint2 px-4 py-3 text-[15px] font-bold text-cta">{serverError}</div>}
 
+      <p className="text-[13px] text-muted">By placing your order you agree to the <Link href="/policies/terms" className="font-bold text-primary underline-offset-2 hover:underline">Terms of sale</Link> and <Link href="/policies/privacy" className="font-bold text-primary underline-offset-2 hover:underline">Privacy notice</Link>.</p>
       <Button type="submit" full disabled={busy || !ready}>
         {busy ? 'Placing your order…' : method === 'cod' ? 'Place order · Cash on Delivery' : `Pay ${peso(total)} with ${pay.pay}`}
       </Button>

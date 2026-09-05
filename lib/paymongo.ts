@@ -23,20 +23,32 @@ export async function createCheckoutSession(order: Order, method: Exclude<Paymen
     method: 'POST',
     headers: { 'content-type': 'application/json', accept: 'application/json', authorization: `Basic ${Buffer.from(key + ':').toString('base64')}` },
     body: JSON.stringify({ data: { attributes } }),
+    signal: AbortSignal.timeout(10_000),
   });
   const json = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(`PayMongo ${res.status}: ${json?.errors?.[0]?.detail ?? 'checkout session failed'}`);
   return { id: json.data.id, checkout_url: json.data.attributes.checkout_url };
 }
 
-/** Paymongo-Signature: `t=<ts>,te=<test sig>,li=<live sig>`; sig = HMAC-SHA256(`${t}.${rawBody}`, webhook secret). */
-export function verifyWebhookSignature(rawBody: string, signatureHeader: string | null, secret: string | undefined): boolean {
+export const SIGNATURE_TOLERANCE_S = 5 * 60;
+
+/** Paymongo-Signature: `t=<ts>,te=<test sig>,li=<live sig>`; sig = HMAC-SHA256(`${t}.${rawBody}`, webhook secret).
+ *  Either the test or the live signature may match (one secret per mode); `t` must be within 5 minutes to block replays. */
+export function verifyWebhookSignature(rawBody: string, signatureHeader: string | null, secret: string | undefined, nowMs = Date.now()): boolean {
   if (!signatureHeader || !secret) return false;
   const parts = Object.fromEntries(signatureHeader.split(',').map((p) => p.trim().split('=') as [string, string]));
   const { t, te = '', li = '' } = parts;
-  if (!t) return false;
+  if (!t || !/^\d+$/.test(t) || Math.abs(nowMs / 1000 - Number(t)) > SIGNATURE_TOLERANCE_S) return false;
   const expected = Buffer.from(createHmac('sha256', secret).update(`${t}.${rawBody}`).digest('hex'));
   const eq = (sig: string) => { const b = Buffer.from(sig); return b.length === expected.length && timingSafeEqual(b, expected); };
-  const testMode = (process.env.PAYMONGO_SECRET_KEY ?? '').startsWith('sk_test_') || !li;
-  return testMode ? eq(te) || (!!li && eq(li)) : eq(li) || (!!te && eq(te));
+  return eq(te) || eq(li);
+}
+
+/** Paid amount in centavos from a checkout_session.payment.paid or payment.paid event, when present. */
+export function paidAmountFromEvent(event: unknown): number | null {
+  const attrs = (event as { data?: { attributes?: Record<string, unknown> } })?.data?.attributes ?? {};
+  const inner = (attrs.data as { attributes?: Record<string, unknown> } | undefined)?.attributes ?? {};
+  const payments = inner.payments as { attributes?: { amount?: number } }[] | undefined;
+  const amount = payments?.[0]?.attributes?.amount ?? (inner.amount as number | undefined);
+  return typeof amount === 'number' ? amount : null;
 }

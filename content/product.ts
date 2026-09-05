@@ -15,7 +15,6 @@ export const product = {
   sku: { fish: 'LARO-HM-FISH', duck: 'LARO-HM-DUCK' },
   demoVideo: {
     src: '/video/laro-hunt-mat-demo.mp4',
-    fallbackSrc: '/video/laro-hunt-mat-demo-720.mp4',
     width: 1080,
     height: 1440,
     durationSeconds: 20,

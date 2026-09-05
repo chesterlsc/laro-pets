@@ -10,6 +10,21 @@ const photos = [images.floorTopdown, images.catsCarpet, images.videoStalk];
 
 export function Reviews() {
   const r = copy.reviews;
+  // Sample reviews never reach customers: until a reviews app is connected (content/reviews.ts, sample: false)
+  // the section keeps its heading and anchor but shows a plain "coming soon" note instead of invented reviews.
+  if (reviews.sample) {
+    return (
+      <Section id="reviews" bg="bg-bg">
+        <div className="flex flex-col gap-3">
+          <Eyebrow>{r.eyebrow}</Eyebrow>
+          <H2>{r.h2}</H2>
+          <p className="max-w-[560px] text-[16px] leading-[1.6] text-muted text-pretty xl:text-[18px]">
+            Reviews from verified orders will appear here once the first Hunt Mats have been delivered.
+          </p>
+        </div>
+      </Section>
+    );
+  }
   return (
     <Section id="reviews" bg="bg-bg">
       <div className="flex flex-col gap-[22px] xl:gap-8">
@@ -28,12 +43,7 @@ export function Reviews() {
         <div className="grid grid-cols-1 gap-[18px] md:grid-cols-2 xl:grid-cols-4">
           {reviews.items.map((item) => (
             <div key={item.name} className="flex flex-col gap-3 rounded-card border border-border bg-surface p-[22px]">
-              <div className="flex items-center justify-between gap-[10px]">
-                <Stars count={item.stars} size={16} />
-                {reviews.sample && (
-                  <span className="whitespace-nowrap rounded-[6px] bg-sample px-2 py-[3px] text-[10px] font-extrabold uppercase tracking-[0.12em] text-ink">{r.sampleTag}</span>
-                )}
-              </div>
+              <Stars count={item.stars} size={16} />
               <p className="text-[15px] leading-[1.6] text-ink">{item.text}</p>
               <div className="mt-auto flex items-center gap-[10px]">
                 <span className="flex h-[34px] w-[34px] items-center justify-center rounded-full bg-tint text-primary">
@@ -52,10 +62,6 @@ export function Reviews() {
           {photos.map((img) => (
             <div key={img.src} className="relative h-[106px] overflow-hidden rounded-inner xl:h-[240px]">
               <Image src={img.src} alt={img.alt} fill sizes="(max-width: 900px) 33vw, 400px" className="object-cover" />
-              <span className="absolute bottom-[10px] left-[10px] rounded-[6px] bg-white/92 px-2 py-1 text-[9px] font-extrabold uppercase tracking-[0.08em] text-ink lg:text-[11px]">
-                <span className="lg:hidden">{r.photoSlotMobile}</span>
-                <span className="hidden lg:inline">{r.photoSlotDesktop}</span>
-              </span>
             </div>
           ))}
         </div>

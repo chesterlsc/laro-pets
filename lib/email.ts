@@ -42,8 +42,7 @@ ${itemsTable(o)}
 ${cod ? `<div style="margin:20px 0;padding:14px 16px;background:#FFE9DD;border-radius:12px"><b>Prepare ${peso(o.total)} in cash</b> for the courier on delivery.</div>` : `<p style="margin:20px 0">Paid via ${METHOD[o.payment_method]}${o.payment_ref ? ` · ref ${esc(o.payment_ref)}` : ''}.</p>`}
 <h3 style="margin:20px 0 8px">What happens next</h3>
 <ol style="margin:0;padding-left:20px">
-<li>We pack your order today.</li>
-<li>The courier picks it up.</li>
+<li>${cod ? 'We’ll text you to confirm, then pack and hand it to the courier.' : 'We pack your order and hand it to the courier.'}</li>
 <li>You get a tracking number by SMS within ${placeholders.deliveryDaysMetroManila} days (Metro Manila) or ${placeholders.deliveryDaysProvinces} days (provinces).</li>
 </ol>
 <p style="margin:16px 0 0;color:#5A6472;font-size:14px">Delivering to ${addressBlock(o)} · ${esc(o.customer.mobile)}</p>`);

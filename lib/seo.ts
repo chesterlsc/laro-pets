@@ -4,13 +4,14 @@ import { copy } from '@/content/copy';
 import { images } from '@/content/images';
 import { product } from '@/content/product';
 import { reviews } from '@/content/reviews';
+import { peso } from '@/lib/pricing';
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 const abs = (path: string) => `${SITE_URL}${path}`;
 
 const title = 'Automatic Hide-and-Seek Cat Teaser Toy (Laro Hunt Mat) — COD, Free Shipping PH';
 const description =
-  'Laro Hunt Mat is an automatic cat teaser: a feather hides under a 60 cm mat and sweeps around like real prey. 3 speeds, USB-C, spare feathers included. ₱799, free shipping on ₱899+, Cash on Delivery available.';
+  `Laro Hunt Mat is an automatic cat teaser: a feather hides under a 60 cm mat and sweeps around like real prey. 3 speeds, USB-C, spare feathers included. ${peso(product.prices.solo)}, free shipping on ${peso(product.shipping.freeFrom)}+, Cash on Delivery available.`;
 
 export const homeMetadata: Metadata = {
   title: { absolute: title },

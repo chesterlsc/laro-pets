@@ -163,13 +163,12 @@ To go live: connect a reviews app (Judge.me, Loox, …), replace `items` with re
 ## Demo video
 
 - `public/video/laro-hunt-mat-demo.mp4` — 1080×1440 H.264, ≈7 MB, what the modal player uses. Loads only when someone clicks Play (`preload="none"`), so it does not count toward first-load weight.
-- `public/video/laro-hunt-mat-demo-720.mp4` — the original 720×960 reference clip (2.8 MB), served as fallback.
 - Poster / still images: `public/images/laro-hunt-mat-demo-{press,stalk,pounce}.jpg` (720×960). The hero poster is the LCP element, so keep it a real JPEG with those dimensions.
 - Metadata (path, dimensions, duration, `uploadDate`) is in `content/product.ts → demoVideo`; the VideoObject JSON-LD reads from there.
 
 ### Video quality
 
-The reference clip is only 720×960, so the site serves an upscaled 1080×1440 (lanczos + light sharpen) H.264 built with `scripts/upscale-video.sh`. It looks acceptable in the modal but it is still an upscale.
+The reference clip is only 720×960, so the site serves an upscaled 1080×1440 (lanczos + light sharpen) H.264 built with `scripts/upscale-video.sh`. It looks acceptable in the modal but it is still an upscale; the original 720×960 clip is kept in the design package (`_src/`, git-ignored), not served.
 
 The real fix is your own footage:
 

@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 import { orderSchema } from '@/lib/order-schema';
-import { createOrder } from '@/lib/orders';
+import { createOrder, isDurableStore, setPaymentRef } from '@/lib/orders';
 import { createCheckoutSession } from '@/lib/paymongo';
 
 export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
-  if (!process.env.PAYMONGO_SECRET_KEY) return NextResponse.json({ error: 'Online payments are not set up yet — please choose Cash on Delivery.' }, { status: 503 });
+  // Online payments need a store the webhook can read back (Supabase) — otherwise a paid order could never be marked paid.
+  if (!process.env.PAYMONGO_SECRET_KEY || !isDurableStore()) return NextResponse.json({ error: 'Online payments are not set up yet — please choose Cash on Delivery.' }, { status: 503 });
   const parsed = orderSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ errors: parsed.error.flatten() }, { status: 400 });
   const { paymentMethod } = parsed.data;
@@ -14,6 +15,7 @@ export async function POST(req: Request) {
   try {
     const order = await createOrder(parsed.data, 'pending_payment');
     const session = await createCheckoutSession(order, paymentMethod);
+    await setPaymentRef(order.id, session.id).catch((e) => console.error('[checkout/paymongo] could not store session id', e));
     return NextResponse.json({ url: session.checkout_url, orderId: order.id });
   } catch (e) {
     console.error('[checkout/paymongo] failed', e);

@@ -4,7 +4,7 @@
 # their own footage: ./scripts/upscale-video.sh path/to/source.mp4
 # ponytail: lanczos upscale only, swap for Real-ESRGAN/Topaz if the owner wants true detail.
 set -euo pipefail
-SRC="${1:-public/video/laro-hunt-mat-demo-720.mp4}"
+SRC="${1:?usage: scripts/upscale-video.sh <source.mp4> [out.mp4]}"
 OUT="${2:-public/video/laro-hunt-mat-demo.mp4}"
 ffmpeg -y -i "$SRC" \
   -vf "scale=1080:1440:flags=lanczos,unsharp=5:5:0.6:5:5:0.0,format=yuv420p" \

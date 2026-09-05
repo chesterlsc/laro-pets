@@ -1,4 +1,5 @@
 import { Icon, Stars } from '@/components/icons';
+import { reviews } from '@/content/reviews';
 import { ButtonLink, Container, Sticker } from '@/components/ui';
 import { copy } from '@/content/copy';
 import { product } from '@/content/product';
@@ -35,20 +36,24 @@ export function Hero() {
                 <span className="font-display text-[40px] font-bold leading-none text-ink">{solo}</span>
                 <span className="text-[13px] font-bold text-muted">{hero.priceNoteMobile.pre}<span className="text-primary">{bundle}</span>{hero.priceNoteMobile.post}</span>
               </span>
-              <span className="flex flex-col items-end gap-1">
-                <Stars size={15} label={hero.ratingMobile} />
-                <span className="text-[11px] font-bold text-muted">{hero.ratingMobile}</span>
-              </span>
+              {!reviews.sample && (
+                <span className="flex flex-col items-end gap-1">
+                  <Stars size={15} label={hero.ratingMobile} />
+                  <span className="text-[11px] font-bold text-muted">{hero.ratingMobile}</span>
+                </span>
+              )}
             </div>
             {/* Price row — desktop */}
             <div className="hidden flex-wrap items-center gap-[18px] lg:flex">
               <span className="font-display text-[52px] font-bold leading-none text-ink">{solo}</span>
               <span className="flex flex-col gap-1">
                 <span className="text-[15px] font-extrabold text-primary">{hero.priceNoteDesktop}</span>
-                <span className="flex items-center gap-2">
-                  <Stars size={15} label={hero.ratingDesktop} />
-                  <span className="text-[13px] font-bold text-muted">{hero.ratingDesktop}</span>
-                </span>
+                {!reviews.sample && (
+                  <span className="flex items-center gap-2">
+                    <Stars size={15} label={hero.ratingDesktop} />
+                    <span className="text-[13px] font-bold text-muted">{hero.ratingDesktop}</span>
+                  </span>
+                )}
               </span>
             </div>
 
