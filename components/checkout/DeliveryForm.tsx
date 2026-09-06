@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type FormEvent, type InputHTMLAttributes } from 'react';
 import { Icon } from '@/components/icons';
 import { Button } from '@/components/ui';
+import { PawSpinner } from '@/components/fx/PawSpinner';
 import { track } from '@/lib/analytics';
 import { useCart } from '@/lib/cart';
 import { orderSchema, type PaymentMethod } from '@/lib/order-schema';
@@ -110,7 +111,7 @@ export function DeliveryForm() {
 
       <p className="text-[13px] text-muted">By placing your order you agree to the <Link href="/policies/terms" className="font-bold text-primary underline-offset-2 hover:underline">Terms of sale</Link> and <Link href="/policies/privacy" className="font-bold text-primary underline-offset-2 hover:underline">Privacy notice</Link>.</p>
       <Button type="submit" full disabled={busy || !ready}>
-        {busy ? 'Placing your order…' : method === 'cod' ? 'Place order · Cash on Delivery' : `Pay ${peso(total)} with ${pay.pay}`}
+        {busy ? <span className="inline-flex items-center gap-2"><PawSpinner />Placing your order…</span> : method === 'cod' ? 'Place order · Cash on Delivery' : `Pay ${peso(total)} with ${pay.pay}`}
       </Button>
     </form>
   );

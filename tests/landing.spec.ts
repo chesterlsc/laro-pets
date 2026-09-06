@@ -2,6 +2,11 @@ import { expect, test } from '@playwright/test';
 
 const SHOTS = process.env.SHOTS_DIR;
 
+// Skip the one-per-session intro overlay so it never sits over the elements under test.
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => sessionStorage.setItem('laro-intro', '1'));
+});
+
 test('video modal opens from the hero card, plays without sound on load, closes on Escape', async ({ page }) => {
   await page.goto('/');
   const video = page.locator('video');
@@ -18,7 +23,7 @@ test('video modal opens from the hero card, plays without sound on load, closes 
 
 test('mobile: sticky buy bar appears only after the hero button scrolls away; FAQ accordion works', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/');
+  await page.goto('/', { waitUntil: 'networkidle' });
   const bar = page.getByRole('link', { name: /^buy now$/i });
   await expect(bar).toBeHidden();
   await page.getByRole('heading', { name: 'Pick your bundle' }).scrollIntoViewIfNeeded();

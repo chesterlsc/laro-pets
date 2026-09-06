@@ -2,6 +2,7 @@ import { Container, Eyebrow } from '@/components/ui';
 import { copy } from '@/content/copy';
 import { ugc } from '@/content/ugc';
 import { DemoButton, DemoCard } from './VideoModal';
+import { CatChase } from '@/components/fx/CatChase';
 
 const ugcCard = 'flex flex-col gap-[10px] rounded-inner border border-white/35 bg-ink/10 p-4';
 const ugcHook = 'font-display text-[16px] font-semibold leading-[1.3] text-white xl:text-[18px]';
@@ -26,6 +27,8 @@ export function SeeItInAction() {
               <DemoButton size="md" icon="play">{action.playFull}</DemoButton>
             </div>
           </div>
+
+          <CatChase tone="dark" className="w-full max-w-[520px]" />
 
           <div className="scroll-snap-x -mr-5 flex gap-3 overflow-x-auto md:-mr-10 lg:mr-0 lg:justify-between lg:gap-6 lg:overflow-visible">
             {action.clips.map((c) => (

@@ -8,6 +8,7 @@ import { Button, ButtonLink, Eyebrow, H2, Section } from '@/components/ui';
 import { useCart } from '@/lib/cart';
 import { peso, quote } from '@/lib/pricing';
 import { track } from '@/lib/analytics';
+import { Reveal } from '@/components/fx/Reveal';
 
 const imgCls = 'relative h-[150px] overflow-hidden rounded-inner xl:h-[170px]';
 const sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 400px';
@@ -33,18 +34,18 @@ export function Bundles() {
         </div>
 
         <div className="grid grid-cols-1 gap-7 pt-[14px] md:grid-cols-2 xl:grid-cols-3">
-          {product.tiers.map((tier) => {
+          {product.tiers.map((tier, i) => {
             const selected = cart.tier === tier.id;
             const featured = tier.id === 'bundle';
             const free = quote({ tier: tier.id, extraRefills: 0 }).shipping === 0;
             return (
+              <Reveal key={tier.id} delay={i * 100} className="grid">
               <div
-                key={tier.id}
                 className={`relative flex flex-col gap-[14px] rounded-card border-2 bg-surface p-[22px] xl:p-[26px] ${selected ? 'border-cta' : 'border-border'} ${featured ? 'shadow-card xl:-translate-y-2' : ''}`}
               >
                 {tier.tag && (
-                  <span className="absolute -top-[14px] left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-cta px-[14px] py-[6px] text-[12px] font-extrabold uppercase tracking-[0.08em] text-white">
-                    {tier.tag}
+                  <span className="absolute -top-[14px] left-1/2 -translate-x-1/2">
+                    <span className="fx-wiggle-loop block whitespace-nowrap rounded-full bg-cta px-[14px] py-[6px] text-[12px] font-extrabold uppercase tracking-[0.08em] text-white">{tier.tag}</span>
                   </span>
                 )}
                 {tier.mats === 1 ? (
@@ -81,6 +82,7 @@ export function Bundles() {
                   Choose {tier.name}
                 </Button>
               </div>
+              </Reveal>
             );
           })}
         </div>

@@ -4,6 +4,8 @@ import './globals.css';
 import { CartProvider } from '@/lib/cart';
 import { PlaceholderBanner } from '@/components/PlaceholderBanner';
 import { Analytics } from '@/components/Analytics';
+import { IntroLoader } from '@/components/fx/IntroLoader';
+import { PawTrail } from '@/components/fx/PawTrail';
 
 const fredoka = Fredoka({ subsets: ['latin'], weight: ['500', '600', '700'], variable: '--font-fredoka', display: 'swap' });
 const nunito = Nunito({ subsets: ['latin'], weight: ['400', '600', '700', '800'], variable: '--font-nunito', display: 'swap' });
@@ -21,6 +23,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en-PH" className={`${fredoka.variable} ${nunito.variable}`}>
       <body>
         <PlaceholderBanner />
+        <IntroLoader />
+        <PawTrail />
         <CartProvider>{children}</CartProvider>
         <Analytics />
       </body>

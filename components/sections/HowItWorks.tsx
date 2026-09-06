@@ -2,6 +2,8 @@ import Image from 'next/image';
 import { copy } from '@/content/copy';
 import { images } from '@/content/images';
 import { Chip, Eyebrow, H2, Section } from '@/components/ui';
+import { Reveal } from '@/components/fx/Reveal';
+import { CatPounce } from '@/components/fx/sprites';
 
 export function HowItWorks() {
   const { eyebrow, h2, p, steps, chips } = copy.how;
@@ -16,7 +18,8 @@ export function HowItWorks() {
 
         <div className="grid grid-cols-1 gap-7 pt-2 md:grid-cols-2 xl:grid-cols-3">
           {steps.map((step, i) => (
-            <div key={step.title} className="relative flex flex-col gap-4 rounded-card border border-border bg-surface p-5 xl:p-7">
+            <Reveal key={step.title} delay={i * 120} className="grid">
+            <div className="relative flex flex-col gap-4 rounded-card border border-border bg-surface p-5 xl:p-7">
               <span className="absolute -top-[14px] left-5 flex h-10 w-10 items-center justify-center rounded-full bg-cta font-display text-[18px] font-bold text-white shadow-step" aria-hidden="true">
                 {i + 1}
               </span>
@@ -28,7 +31,9 @@ export function HowItWorks() {
                 {step.title}
               </h3>
               <p className="text-[15px] leading-[1.6] text-muted text-pretty">{step.body}</p>
+              {i === 2 && <CatPounce size={40} className="fx-float pointer-events-none absolute -top-[22px] right-[18px] text-cta" />}
             </div>
+            </Reveal>
           ))}
         </div>
 

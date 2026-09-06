@@ -5,6 +5,7 @@ import { placeholders } from '@/content/placeholders';
 import { reviews } from '@/content/reviews';
 import { Icon, Stars } from '@/components/icons';
 import { Eyebrow, H2, Section } from '@/components/ui';
+import { Reveal } from '@/components/fx/Reveal';
 
 const photos = [images.floorTopdown, images.catsCarpet, images.videoStalk];
 
@@ -15,13 +16,13 @@ export function Reviews() {
   if (reviews.sample) {
     return (
       <Section id="reviews" bg="bg-bg">
-        <div className="flex flex-col gap-3">
+        <Reveal className="flex flex-col gap-3">
           <Eyebrow>{r.eyebrow}</Eyebrow>
           <H2>{r.h2}</H2>
           <p className="max-w-[560px] text-[16px] leading-[1.6] text-muted text-pretty xl:text-[18px]">
             Reviews from verified orders will appear here once the first Hunt Mats have been delivered.
           </p>
-        </div>
+        </Reveal>
       </Section>
     );
   }
@@ -41,8 +42,9 @@ export function Reviews() {
         </div>
 
         <div className="grid grid-cols-1 gap-[18px] md:grid-cols-2 xl:grid-cols-4">
-          {reviews.items.map((item) => (
-            <div key={item.name} className="flex flex-col gap-3 rounded-card border border-border bg-surface p-[22px]">
+          {reviews.items.map((item, i) => (
+            <Reveal key={item.name} delay={i * 80} className="grid">
+            <div className="flex flex-col gap-3 rounded-card border border-border bg-surface p-[22px]">
               <Stars count={item.stars} size={16} />
               <p className="text-[15px] leading-[1.6] text-ink">{item.text}</p>
               <div className="mt-auto flex items-center gap-[10px]">
@@ -55,16 +57,17 @@ export function Reviews() {
                 </span>
               </div>
             </div>
+            </Reveal>
           ))}
         </div>
 
-        <div className="grid grid-cols-3 gap-2 xl:gap-4">
+        <Reveal delay={120} className="grid grid-cols-3 gap-2 xl:gap-4">
           {photos.map((img) => (
             <div key={img.src} className="relative h-[106px] overflow-hidden rounded-inner xl:h-[240px]">
               <Image src={img.src} alt={img.alt} fill sizes="(max-width: 900px) 33vw, 400px" className="object-cover" />
             </div>
           ))}
-        </div>
+        </Reveal>
       </div>
     </Section>
   );

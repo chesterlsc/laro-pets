@@ -1,20 +1,22 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { ButtonLink } from '@/components/ui';
 import { copy } from '@/content/copy';
 import { product } from '@/content/product';
 import { peso } from '@/lib/pricing';
 
+// Shown once the hero Buy button (#hero-buy) has scrolled above the viewport. Reads the layout on
+// scroll/resize through useSyncExternalStore, so it is deterministic regardless of hydration order.
+const subscribe = (cb: () => void) => {
+  window.addEventListener('scroll', cb, { passive: true });
+  window.addEventListener('resize', cb);
+  return () => { window.removeEventListener('scroll', cb); window.removeEventListener('resize', cb); };
+};
+const heroButtonAbove = () => { const el = document.getElementById('hero-buy'); return !!el && el.getBoundingClientRect().bottom < 0; };
+
 /** Mobile-only bottom bar; slides in once #hero-buy has scrolled above the viewport. */
 export function StickyBuyBar() {
-  const [show, setShow] = useState(false);
-  useEffect(() => {
-    const el = document.getElementById('hero-buy');
-    if (!el) return;
-    const io = new IntersectionObserver(([e]) => setShow(!e.isIntersecting && e.boundingClientRect.top < 0));
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
+  const show = useSyncExternalStore(subscribe, heroButtonAbove, () => false);
   return (
     <div
       inert={!show}

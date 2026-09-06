@@ -5,10 +5,16 @@ import { copy } from '@/content/copy';
 import { product } from '@/content/product';
 import { peso } from '@/lib/pricing';
 import { DemoButton, DemoCard } from './VideoModal';
+import { FeatherPeek } from '@/components/fx/FeatherPeek';
 
 const { hero } = copy;
 const solo = peso(product.prices.solo);
 const bundle = peso(product.prices.bundle);
+
+/** Absolutely-positioned float wrapper so laro-float's transform never fights .sticker's rotate. */
+function Float({ className, delay, children }: { className: string; delay: number; children: React.ReactNode }) {
+  return <span className={`fx-float absolute z-[3] ${className}`} style={{ animationDelay: `${delay}s` }}>{children}</span>;
+}
 
 export function Hero() {
   return (
@@ -59,7 +65,7 @@ export function Hero() {
 
             <div className="contents lg:flex lg:flex-wrap lg:items-center lg:gap-[14px]">
               <div id="hero-buy">
-                <ButtonLink href="/checkout" icon="cart" full className="lg:w-auto">{hero.buyNow}</ButtonLink>
+                <ButtonLink href="/checkout" icon="cart" full className="fx-wiggle-hover lg:w-auto">{hero.buyNow}</ButtonLink>
               </div>
               <div className="order-2 lg:order-none">
                 <DemoButton variant="secondary" size="md" icon="play" full className="lg:w-auto lg:px-7 lg:py-[18px] lg:text-[18px]">
@@ -89,17 +95,18 @@ export function Hero() {
             <svg width="560" height="560" viewBox="0 0 200 200" aria-hidden="true" className="absolute top-10 left-[30px] z-0 h-[300px] w-[300px] rotate-[12deg] lg:top-5 lg:left-[-40px] lg:h-[560px] lg:w-[560px] lg:rotate-[18deg]">
               <path d="M45 30c30-25 80-25 110 0s45 70 25 105-70 55-110 40S5 120 10 80 15 55 45 30z" className="fill-tint" />
             </svg>
-            <div className="relative z-[1] lg:rotate-[-2deg]">
-              <DemoCard image="videoPounce" label={hero.videoLabel} time={product.demoVideo.durationLabel} priority sizes="(max-width: 900px) 300px, 380px" aria-label="Play the 20-second demo" className="h-[400px] w-[300px] lg:h-[520px] lg:w-[380px]" captionClass="text-[18px] xl:text-[22px]" caption={<>{hero.videoHook.pre}<span className="text-accent2">{hero.videoHook.accent}</span></>} />
+            <div className="relative z-[1] overflow-visible lg:rotate-[-2deg]">
+              <FeatherPeek className="text-[#3F8F5E]" />
+              <DemoCard image="videoPounce" label={hero.videoLabel} time={product.demoVideo.durationLabel} priority sizes="(max-width: 900px) 300px, 380px" aria-label="Play the 20-second demo" className="fx-wiggle-hover h-[400px] w-[300px] lg:h-[520px] lg:w-[380px]" captionClass="text-[18px] xl:text-[22px]" caption={<>{hero.videoHook.pre}<span className="text-accent2">{hero.videoHook.accent}</span></>} />
               {/* mobile stickers */}
-              <Sticker tone="yellow" rotate={-8} className="top-[118px] left-[-4px] text-[14px] lg:hidden">{hero.stickers.speeds}</Sticker>
-              <Sticker tone="white" rotate={6} className="top-[214px] right-[-2px] text-[14px] lg:hidden">{hero.stickers.quietMobile}</Sticker>
-              <Sticker tone="teal" rotate={-4} className="bottom-[118px] left-[-8px] text-[13px] lg:hidden">{hero.stickers.typeC}</Sticker>
+              <Float delay={0} className="top-[118px] left-[-4px] lg:hidden"><Sticker tone="yellow" rotate={-8} className="static! text-[14px]">{hero.stickers.speeds}</Sticker></Float>
+              <Float delay={0.6} className="top-[214px] right-[-2px] lg:hidden"><Sticker tone="white" rotate={6} className="static! text-[14px]">{hero.stickers.quietMobile}</Sticker></Float>
+              <Float delay={1.2} className="bottom-[118px] left-[-8px] lg:hidden"><Sticker tone="teal" rotate={-4} className="static! text-[13px]">{hero.stickers.typeC}</Sticker></Float>
               {/* desktop stickers */}
-              <Sticker tone="yellow" rotate={-10} className="hidden top-[130px] left-[-14px] text-[16px] lg:block">{hero.stickers.speeds}</Sticker>
-              <Sticker tone="white" rotate={7} className="hidden top-[120px] right-[-6px] text-[15px] lg:block">{hero.stickers.quietDesktop}</Sticker>
-              <Sticker tone="teal" rotate={-5} className="hidden bottom-[70px] left-[-4px] text-[15px] lg:block">{hero.stickers.typeC}</Sticker>
-              <Sticker tone="coral" rotate={4} className="hidden right-2 bottom-6 text-[15px] lg:block">{hero.stickers.feathers}</Sticker>
+              <Float delay={0} className="hidden top-[130px] left-[-14px] lg:block"><Sticker tone="yellow" rotate={-10} className="static! text-[16px]">{hero.stickers.speeds}</Sticker></Float>
+              <Float delay={0.6} className="hidden top-[120px] right-[-6px] lg:block"><Sticker tone="white" rotate={7} className="static! text-[15px]">{hero.stickers.quietDesktop}</Sticker></Float>
+              <Float delay={1.2} className="hidden bottom-[70px] left-[-4px] lg:block"><Sticker tone="teal" rotate={-5} className="static! text-[15px]">{hero.stickers.typeC}</Sticker></Float>
+              <Float delay={1.8} className="hidden right-2 bottom-6 lg:block"><Sticker tone="coral" rotate={4} className="static! text-[15px]">{hero.stickers.feathers}</Sticker></Float>
             </div>
           </div>
         </div>
