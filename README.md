@@ -2,6 +2,8 @@
 
 **Supabase (set up 6 Sep 2026):** project `laro-pets`, ref `gbgzmvlyesvhzrfjjkgt`, region ap-southeast-1 (Singapore) — dashboard https://supabase.com/dashboard/project/gbgzmvlyesvhzrfjjkgt. The schema is applied from `supabase/migrations/20260906000000_orders.sql` (same content as `supabase/schema.sql`); re-apply with `npx -y supabase@latest db push --db-url <pooler url>`. The database password is in `~/.laro-supabase-db-password` on the owner's Mac (not in the repo). `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are set in Vercel (Production + Preview). Orders appear in Table Editor → `orders`.
 
+**Unit economics:** `research/laro-margin-sheet.xlsx` — editable inputs (sourcing case, courier zone, payment method, fees) and contribution margin per bundle; yellow cells are assumptions to replace with your rate cards.
+
 **Staging:** https://laro-pets.vercel.app (Vercel project `laro-pets`, auto-deploys from `main`; `LARO_ALLOW_PLACEHOLDERS=1` is set there until the placeholders are filled). — Laro Hunt Mat store
 
 Single-product Next.js 15 store (App Router, TypeScript, Tailwind v4) selling the Laro Hunt Mat in the Philippines: landing page, guest checkout with COD / GCash / Maya / cards via PayMongo, order storage in Supabase (or a Google Sheet), confirmation emails via Resend.
