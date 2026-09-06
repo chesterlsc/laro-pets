@@ -201,6 +201,7 @@ export const copy = {
     toastVerified: 'Real order · verified from our order book',
     ctaSocial: (n: number) => `Join ${n.toLocaleString('en-PH')} cat parents who already ordered`,
     via: (source: string) => `via ${source}`,
+    supplierDisclosure: (source: string) => `Reviews marked “via ${source}” were written by buyers of the same mat from our supplier’s store and are shared here with the supplier’s permission. Reviews with the Verified order badge are from Laro customers.`,
   },
   stickyBar: { sub: 'COD · free ship on ₱899+', button: 'Buy now' },
   header: { buyNow: 'Buy now — ₱799' },

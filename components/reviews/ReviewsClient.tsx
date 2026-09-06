@@ -211,6 +211,9 @@ export function ReviewsClient({ items: initial, summary }: { items: Review[]; su
 
       {canLoadMore && !stars && <div className="flex justify-center"><Button variant="secondary" size="md" onClick={loadMore} disabled={loading}>{loading ? '…' : e.loadMore}</Button></div>}
       {summary.count > 0 && <p className="text-center text-[12px] text-muted"><Chip icon="check" iconSize={13}>{e.verified}</Chip> means the order number matched a real Laro order.</p>}
+      {all.some((r) => r.source !== 'site') && (
+        <p className="mx-auto max-w-[640px] text-center text-[12px] leading-[1.5] text-muted">{copy.trust.supplierDisclosure([...new Set(all.filter((r) => r.source !== 'site').map((r) => r.source))].join(' / '))}</p>
+      )}
     </div>
   );
 }

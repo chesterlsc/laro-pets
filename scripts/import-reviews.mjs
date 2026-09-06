@@ -1,13 +1,16 @@
 #!/usr/bin/env node
-// Import YOUR OWN customers' reviews from another channel (Shopee / Lazada / TikTok Shop export) as approved reviews.
-// Usage: SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… node scripts/import-reviews.mjs reviews.csv shopee
+// Import reviews as approved rows with a source badge. Two legitimate sources:
+//   - your own buyers on another channel (source: shopee / lazada / tiktok)
+//   - buyers of the SAME mat from your supplier's store, shared with the supplier's permission (source: AliExpress / supplier name)
+// The site shows the source badge plus a disclosure line for supplier reviews. Never import reviews of a different product.
+// Usage: SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… node scripts/import-reviews.mjs reviews.csv AliExpress
 // CSV columns (header row required): name,city,stars,title,body,date,order_ref  — date = YYYY-MM-DD, stars = 1–5.
 // Only import reviews written by real buyers of the Laro Hunt Mat on that channel. Do not import reviews of other sellers' products.
 import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
-const [file, source = 'shopee'] = process.argv.slice(2);
+const [file, source = 'AliExpress'] = process.argv.slice(2);
 if (!file) { console.error('usage: node scripts/import-reviews.mjs <file.csv> <source>'); process.exit(1); }
 const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = process.env;
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) { console.error('Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY'); process.exit(1); }
