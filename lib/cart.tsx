@@ -1,11 +1,12 @@
 'use client';
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useSyncExternalStore, type ReactNode } from 'react';
 import { DEFAULT_TIER, product, tierById, type Print, type TierId } from '@/content/product';
 import { clampRefills } from './pricing';
 
 export type Cart = { tier: TierId; extraRefills: number; prints: Print[] };
 type CartCtx = {
   cart: Cart;
+  /** false during SSR/hydration, true once the browser cart has been read. */
   ready: boolean;
   setTier: (tier: TierId) => void;
   setExtraRefills: (n: number) => void;
@@ -24,32 +25,34 @@ export const normalizeCart = (c: Partial<Cart> | null | undefined): Cart => {
   return { tier, extraRefills: clampRefills(c?.extraRefills ?? 0), prints };
 };
 
+// Tiny external store over localStorage so React reads it with useSyncExternalStore (no setState-in-effect).
+let snapshot: Cart | null = null;
+const listeners = new Set<() => void>();
+const read = (): Cart => {
+  if (!snapshot) {
+    try { snapshot = normalizeCart(JSON.parse(localStorage.getItem(KEY) ?? 'null')); } catch { snapshot = initial; }
+  }
+  return snapshot;
+};
+const write = (c: Cart) => {
+  snapshot = c;
+  try { localStorage.setItem(KEY, JSON.stringify(c)); } catch {}
+  listeners.forEach((l) => l());
+};
+const subscribe = (l: () => void) => { listeners.add(l); return () => { listeners.delete(l); }; };
+
 const Ctx = createContext<CartCtx | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cart, setCart] = useState<Cart>(initial);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (raw) setCart(normalizeCart(JSON.parse(raw)));
-    } catch {}
-    setReady(true);
-  }, []);
-
-  useEffect(() => {
-    if (!ready) return;
-    try { localStorage.setItem(KEY, JSON.stringify(cart)); } catch {}
-  }, [cart, ready]);
-
+  const cart = useSyncExternalStore(subscribe, read, () => initial);
+  const ready = useSyncExternalStore(subscribe, () => true, () => false);
   const value: CartCtx = {
     cart,
     ready,
-    setTier: (tier) => setCart((c) => normalizeCart({ ...c, tier })),
-    setExtraRefills: (n) => setCart((c) => ({ ...c, extraRefills: clampRefills(n) })),
-    setPrint: (i, print) => setCart((c) => ({ ...c, prints: c.prints.map((p, idx) => (idx === i ? print : p)) })),
-    reset: () => setCart(initial),
+    setTier: (tier) => write(normalizeCart({ ...read(), tier })),
+    setExtraRefills: (n) => write({ ...read(), extraRefills: clampRefills(n) }),
+    setPrint: (i, print) => write({ ...read(), prints: read().prints.map((p, idx) => (idx === i ? print : p)) }),
+    reset: () => write(initial),
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

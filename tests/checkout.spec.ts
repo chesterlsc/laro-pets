@@ -11,7 +11,8 @@ test('COD checkout: Mat + Refill → thank-you shows order number and ₱899', a
   await expect(page).toHaveURL(/\/checkout/);
 
   await page.getByLabel('Full name').fill('Test Cat Parent');
-  await page.getByLabel('Mobile number').fill('09171234567');
+  // Unique per run: the API rejects a second COD order from the same mobile within 10 minutes.
+  await page.getByLabel('Mobile number').fill('09' + String(Date.now()).slice(-9));
   await page.getByLabel('House/unit + street').fill('12 Sampaguita St');
   await page.getByLabel('Barangay').fill('Bagong Pag-asa');
   await page.getByLabel('City/Municipality').fill('Quezon City');
