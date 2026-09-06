@@ -1,6 +1,6 @@
 'use client';
-import { useEffect, useState, useSyncExternalStore, type CSSProperties } from 'react';
-import { CatPounce, Feather, MatBlob } from './sprites';
+import { useEffect, useState, useSyncExternalStore } from 'react';
+import { PawPrint } from './sprites';
 
 const KEY = 'laro-intro';
 let wanted: boolean | undefined;
@@ -16,7 +16,7 @@ const getSnapshot = () =>
     }
   })());
 
-/** Once-per-session intro: mat pops, feather peeks, cat pounces, overlay slides away (≤ 1.6 s). Renders null on the server. */
+/** Once-per-session intro: a coral paw bounces three times, then the overlay slides away (≤ 1.6 s). Renders null on the server. */
 export function IntroLoader() {
   const show = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const [done, setDone] = useState(false);
@@ -40,12 +40,9 @@ export function IntroLoader() {
   if (!show || done) return null;
   return (
     <div role="presentation" aria-hidden="true" onClick={() => setDone(true)} className="fx-intro fixed inset-0 z-[100] flex cursor-pointer items-center justify-center bg-bg text-ink">
-      <div className="relative h-[160px] w-[160px]">
-        <span className="fx-intro-feather absolute left-[40px] top-[60px]" style={{ '--px': '-40px', '--py': '0px' } as CSSProperties}>
-          <Feather size={40} className="-rotate-[135deg] text-[#3F8F5E] [&_.fx-tip]:stroke-accent2" />
-        </span>
-        <MatBlob size={160} className="fx-intro-mat absolute inset-0 fill-tint" />
-        <CatPounce size={96} className="fx-intro-cat absolute left-[28px] top-[28px]" />
+      <div className="relative flex h-[140px] w-[120px] items-end justify-center">
+        <span className="fx-intro-shadow absolute bottom-[6px] h-[10px] w-[64px] rounded-full bg-ink/15" />
+        <PawPrint size={72} className="fx-intro-paw relative text-cta" />
       </div>
     </div>
   );

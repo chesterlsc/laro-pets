@@ -97,9 +97,10 @@ img { max-width: 100%; }
 
 /* Intro overlay: mat pops (0–.45s), feather peeks (.3–.75s), cat pounces (.5–1.05s) + squash, overlay slides up (1.25–1.6s). */
 .fx-intro { animation: laro-intro-out .35s ease-in 1.25s forwards; }
-.fx-intro-mat { --r: 0deg; animation: sticker-pop .45s cubic-bezier(.2, .9, .3, 1.3) both, laro-wiggle .45s ease-in-out 1.1s; }
-.fx-intro-feather { animation: laro-peek 1s ease-in-out .3s both; }
-.fx-intro-cat { transform-origin: 50% 100%; animation: laro-pounce .55s cubic-bezier(.3, 1.6, .6, 1) .5s backwards, laro-squash .35s ease-out 1.05s forwards; }
+@keyframes laro-paw-bounce { 0% { transform: translateY(0) scale(1.18, .84); animation-timing-function: cubic-bezier(.2, .7, .4, 1); } 12% { transform: translateY(-6px) scale(.94, 1.08); } 50% { transform: translateY(-52px) scale(1); animation-timing-function: cubic-bezier(.6, 0, .8, .3); } 88% { transform: translateY(-4px) scale(1); } 100% { transform: translateY(0) scale(1.18, .84); } }
+@keyframes laro-paw-shadow { 0%, 100% { transform: scaleX(1); opacity: .5; } 50% { transform: scaleX(.55); opacity: .18; } }
+.fx-intro-paw { transform-origin: 50% 100%; animation: laro-paw-bounce .42s infinite; }
+.fx-intro-shadow { animation: laro-paw-shadow .42s infinite; }
 
 /* CatChase: one 6 s loop, phases as % — feather taunts 5–48%, stalk 8–55% (with freezes), pounce 55–65%, land+squash 65–74%, sit, fade 90–93%. */
 .fx-chase-cat { transform-origin: 24px 48px; animation: laro-chase-cat 6s linear infinite; }
@@ -133,7 +134,7 @@ img { max-width: 100%; }
 
 @media (prefers-reduced-motion: reduce) {
   .fx-wiggle-hover:hover, .fx-float, .fx-peek, .fx-paw, .fx-paw-spinner > svg, .fx-loading-cat,
-  .fx-intro, .fx-intro-mat, .fx-intro-feather, .fx-intro-cat,
+  .fx-intro, .fx-intro-paw, .fx-intro-shadow,
   .fx-chase-cat, .fx-chase-stalk, .fx-chase-stalk > g, .fx-chase-pounce, .fx-chase-sit, .fx-chase-mat, .fx-chase-feather, .fx-chase-paw,
   [data-reveal].js-reveal { animation: none !important; }
   [data-reveal].js-reveal { opacity: 1; transform: none; }
