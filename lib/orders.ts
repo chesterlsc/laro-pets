@@ -33,7 +33,12 @@ type Store = {
   /** Most recent pending COD order from this mobile since `sinceIso`, or null. */
   findRecentCod(mobile: string, sinceIso: string): Promise<Order | null>;
   getByNo(orderNo: string): Promise<Order | null>;
+  /** Anonymised, non-cancelled order stats for social proof: total count + the latest few (city, tier, time). */
+  publicStats(limit: number): Promise<PublicStats>;
 };
+export type PublicStats = { orders: number; recent: { city: string; tier: TierId; at: string }[] };
+const LIVE: OrderStatus[] = ['pending_cod', 'paid', 'fulfilled'];
+const toRecent = (rows: Order[]) => rows.map((o) => ({ city: o.address.city, tier: o.items.tier, at: o.created_at }));
 
 const cache = new Map<string, Order>();
 
@@ -50,6 +55,10 @@ function supabaseStore(url: string, key: string): Store {
       fail(r.error); return (r.data as Order | null) ?? null;
     },
     async getByNo(orderNo) { const r = await sb.from('orders').select('*').eq('order_no', orderNo).maybeSingle(); fail(r.error); return (r.data as Order | null) ?? null; },
+    async publicStats(limit) {
+      const r = await sb.from('orders').select('address,items,created_at', { count: 'exact' }).in('status', LIVE).order('created_at', { ascending: false }).limit(limit);
+      fail(r.error); return { orders: r.count ?? 0, recent: toRecent((r.data as Order[]) ?? []) };
+    },
   };
 }
 
@@ -67,6 +76,7 @@ function webhookStore(url: string): Store {
     async updateWhere(id, patch, expect) { const cur = cache.get(id); if (!cur || cur.status !== expect) return null; const next = { ...cur, ...patch }; await post(next, 'order.updated'); return next; },
     async findRecentCod(mobile, sinceIso) { return [...cache.values()].filter((o) => o.status === 'pending_cod' && o.customer.mobile === mobile && o.created_at >= sinceIso).pop() ?? null; },
     async getByNo(orderNo) { return [...cache.values()].find((o) => o.order_no === orderNo) ?? null; },
+    async publicStats(limit) { const live = [...cache.values()].filter((o) => LIVE.includes(o.status)).sort((a, b) => b.created_at.localeCompare(a.created_at)); return { orders: live.length, recent: toRecent(live.slice(0, limit)) }; },
   };
 }
 
@@ -88,6 +98,7 @@ function fileStore(): Store {
     },
     async findRecentCod(mobile, sinceIso) { return (await readAll()).filter((o) => o.status === 'pending_cod' && o.customer.mobile === mobile && o.created_at >= sinceIso).pop() ?? null; },
     async getByNo(orderNo) { return (await readAll()).find((o) => o.order_no === orderNo) ?? null; },
+    async publicStats(limit) { const live = (await readAll()).filter((o) => LIVE.includes(o.status)).sort((a, b) => b.created_at.localeCompare(a.created_at)); return { orders: live.length, recent: toRecent(live.slice(0, limit)) }; },
   };
 }
 
@@ -148,6 +159,7 @@ export const markPaid = (id: string, paymentRef: string) => getStore().updateWhe
 export const markCancelled = (id: string) => getStore().updateWhere(id, { status: 'cancelled' }, 'pending_payment');
 export const setPaymentRef = (id: string, ref: string) => getStore().update(id, { payment_ref: ref });
 export const getOrderByNo = (orderNo: string) => getStore().getByNo(orderNo);
+export const publicOrderStats = (limit = 8) => getStore().publicStats(limit);
 export const findRecentCod = (mobile: string, minutes: number) => getStore().findRecentCod(mobile, new Date(Date.now() - minutes * 60_000).toISOString());
 
 /** Human-readable lines shared by emails, PayMongo and the thank-you page. Amounts in pesos per unit. */

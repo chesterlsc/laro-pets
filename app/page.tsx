@@ -18,20 +18,24 @@ import { FinalCta } from '@/components/sections/FinalCta';
 import { Footer } from '@/components/sections/Footer';
 import { ViewItem } from '@/components/ViewItem';
 import { getReviewSummaryCached } from '@/lib/reviews';
+import { getOrderStatsCached } from '@/lib/social';
+import { TrustBar } from '@/components/sections/TrustBar';
+import { RecentOrders } from '@/components/RecentOrders';
 
 export const metadata: Metadata = homeMetadata;
 
 export default async function Home() {
-  const summary = await getReviewSummaryCached();
+  const [summary, stats] = await Promise.all([getReviewSummaryCached(), getOrderStatsCached()]);
   return (
     <VideoModalProvider>
       <JsonLd data={productJsonLd(summary)} />
       <JsonLd data={videoJsonLd()} />
       <ViewItem />
       <AnnouncementBar />
-      <Header />
+      <Header summary={summary} />
       <main>
         <Hero summary={summary} />
+        <TrustBar summary={summary} stats={stats} />
         <Marquee />
         <SeeItInAction />
         <HowItWorks />
@@ -41,10 +45,11 @@ export default async function Home() {
         <Objections />
         <Specs />
         <Faq />
-        <FinalCta />
+        <FinalCta orders={stats.orders} />
       </main>
       <Footer />
       <StickyBuyBar />
+      <RecentOrders />
     </VideoModalProvider>
   );
 }

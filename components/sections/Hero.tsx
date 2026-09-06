@@ -1,5 +1,6 @@
 import { Icon, Stars } from '@/components/icons';
 import type { Summary } from '@/lib/review-schema';
+import { SHOW_RATING_FROM } from '@/lib/social-shared';
 import { ButtonLink, Container, Sticker } from '@/components/ui';
 import { copy } from '@/content/copy';
 import { product } from '@/content/product';
@@ -17,7 +18,7 @@ function Float({ className, delay, children }: { className: string; delay: numbe
 }
 
 export function Hero({ summary }: { summary?: Summary }) {
-  const rated = !!summary && summary.count >= 5;
+  const rated = !!summary && summary.count >= SHOW_RATING_FROM;
   const ratingText = rated ? copy.reviewsEngine.heroLine(summary!.average, summary!.count) : '';
   const ratingStars = rated ? Math.round(summary!.average) : 0;
   return (
@@ -45,24 +46,20 @@ export function Hero({ summary }: { summary?: Summary }) {
                 <span className="font-display text-[40px] font-bold leading-none text-ink">{solo}</span>
                 <span className="text-[13px] font-bold text-muted">{hero.priceNoteMobile.pre}<span className="text-primary">{bundle}</span>{hero.priceNoteMobile.post}</span>
               </span>
-              {rated && (
-                <span className="flex flex-col items-end gap-1">
-                  <Stars size={15} count={ratingStars} label={ratingText} />
-                  <span className="text-[11px] font-bold text-muted">{ratingText}</span>
-                </span>
-              )}
+              <span className="flex flex-col items-end gap-1">
+                <Stars size={15} count={ratingStars} label={rated ? ratingText : copy.trust.reviewsOpen} />
+                {rated ? <span className="text-[11px] font-bold text-muted">{ratingText}</span> : <a href="#reviews" className="text-[11px] font-bold text-primary no-underline hover:underline">{copy.trust.reviewsOpen}</a>}
+              </span>
             </div>
             {/* Price row — desktop */}
             <div className="hidden flex-wrap items-center gap-[18px] lg:flex">
               <span className="font-display text-[52px] font-bold leading-none text-ink">{solo}</span>
               <span className="flex flex-col gap-1">
                 <span className="text-[15px] font-extrabold text-primary">{hero.priceNoteDesktop}</span>
-                {rated && (
-                  <span className="flex items-center gap-2">
-                    <Stars size={15} count={ratingStars} label={ratingText} />
-                    <span className="text-[13px] font-bold text-muted">{ratingText}</span>
-                  </span>
-                )}
+                <span className="flex items-center gap-2">
+                  <Stars size={15} count={ratingStars} label={rated ? ratingText : copy.trust.reviewsOpen} />
+                  {rated ? <span className="text-[13px] font-bold text-muted">{ratingText}</span> : <a href="#reviews" className="text-[13px] font-bold text-primary no-underline hover:underline">{copy.trust.reviewsOpen}</a>}
+                </span>
               </span>
             </div>
 

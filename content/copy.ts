@@ -185,6 +185,23 @@ export const copy = {
       successBody: 'We read every review before it goes live, usually within a day.',
     },
   },
+  trust: {
+    newStore: 'New in the Philippines',
+    items: [
+      { icon: 'cod', text: 'Cash on Delivery nationwide' },
+      { icon: 'truck', text: 'Ships from Metro Manila' },
+      { icon: 'shield', text: '30-day Cat-Approved Guarantee [Proposed policy]' },
+      { icon: 'feather', text: 'Spare feathers in every box' },
+      { icon: 'lock', text: 'Secure guest checkout' },
+    ],
+    rating: (avg: number, n: number) => `${avg.toFixed(1)} from ${n} ${n === 1 ? 'review' : 'reviews'}`,
+    orders: (n: number) => `${n.toLocaleString('en-PH')} cat parents ordered`,
+    reviewsOpen: 'Reviews open — be the first',
+    toast: (city: string, tier: string) => `Someone in ${city} ordered ${tier}`,
+    toastVerified: 'Real order · verified from our order book',
+    ctaSocial: (n: number) => `Join ${n.toLocaleString('en-PH')} cat parents who already ordered`,
+    via: (source: string) => `via ${source}`,
+  },
   stickyBar: { sub: 'COD · free ship on ₱899+', button: 'Buy now' },
   header: { buyNow: 'Buy now — ₱799' },
 } as const;

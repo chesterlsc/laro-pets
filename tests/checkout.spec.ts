@@ -22,7 +22,7 @@ test('COD checkout: Mat + Refill → thank-you shows order number and ₱899', a
   await page.getByRole('button', { name: /Place order/ }).click();
 
   await expect(page).toHaveURL(/\/thank-you\//);
-  await expect(page.getByText(/LP-\d{6}-[A-Z0-9]{4}/)).toBeVisible();
+  await expect(page.getByRole('heading', { name: /LP-\d{6}-[A-Z0-9]{4}/ })).toBeVisible();
   await expect(page.getByText('₱899').first()).toBeVisible();
   expect(errors).toEqual([]);
 });

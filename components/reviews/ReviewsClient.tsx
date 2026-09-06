@@ -27,7 +27,10 @@ function ReviewCard({ r, voted, onVote }: { r: Review; voted: boolean; onVote: (
     <article className="flex flex-col gap-3 rounded-card border border-border bg-surface p-[22px]">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Stars count={r.stars} size={16} />
-        {r.verified && <span className="inline-flex items-center gap-1 rounded-full bg-tint px-2 py-[3px] text-[11px] font-extrabold uppercase tracking-[0.08em] text-primary"><Icon name="check" size={12} />{e.verified}</span>}
+        <span className="flex items-center gap-2">
+          {r.source !== 'site' && <span className="rounded-full border border-border px-2 py-[3px] text-[11px] font-extrabold uppercase tracking-[0.08em] text-muted">{copy.trust.via(r.source)}</span>}
+          {r.verified && <span className="inline-flex items-center gap-1 rounded-full bg-tint px-2 py-[3px] text-[11px] font-extrabold uppercase tracking-[0.08em] text-primary"><Icon name="check" size={12} />{e.verified}</span>}
+        </span>
       </div>
       {r.title && <h3 className="text-[18px]">{r.title}</h3>}
       <p className={`text-[15px] leading-[1.6] text-ink ${!open && long ? 'line-clamp-5' : ''}`}>{r.body}</p>
