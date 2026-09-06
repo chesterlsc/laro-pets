@@ -7,9 +7,12 @@ import { peso } from './pricing';
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 const METHOD: Record<Order['payment_method'], string> = { cod: 'Cash on Delivery', gcash: 'GCash', maya: 'Maya', card: 'Credit/Debit card' };
 
+/** EMAIL_FROM wins; otherwise Resend's shared onboarding sender on localhost / *.vercel.app (no DNS needed —
+ *  it can only reach the Resend account owner's inbox, which is the store-owner notification), else orders@<domain>. */
 function fromAddress() {
+  if (process.env.EMAIL_FROM) return process.env.EMAIL_FROM;
   const host = new URL(SITE).hostname;
-  return host.includes('localhost') ? 'Laro Pets <onboarding@resend.dev>' : `Laro Pets <orders@${host}>`;
+  return host.includes('localhost') || host.endsWith('.vercel.app') ? 'Laro Pets <onboarding@resend.dev>' : `Laro Pets <orders@${host}>`;
 }
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
