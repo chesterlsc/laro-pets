@@ -69,6 +69,10 @@ If `SUPABASE_URL` is blank, each order is `POST`ed as JSON to `ORDERS_WEBHOOK_UR
 
 Payment status updates from the PayMongo webhook are also posted there, with the same order number, so you can match rows by hand. Move to Supabase before volume grows — the Sheet path has no updates, only appends.
 
+## Customer reviews
+
+Reviews are real customers only — the form on `/#reviews` writes to the Supabase `reviews` table with `status = 'pending'`. To publish one, open Supabase → Table Editor → `reviews` and set `status` to `approved` (optionally fill `owner_reply` or `photo_url`); the home page picks it up within 5 minutes. Set `rejected` to hide spam. A review whose order number matches a real order gets the "Verified order" badge automatically. The hero shows the star rating once there are 5 approved reviews; Google's `aggregateRating` is emitted from the first approved review. While there are none, the section shows an attributed summary of public feedback on comparable mats (`content/categoryFeedback.ts`) — delete that file's content once real reviews exist if you prefer. Copy for the section lives under `copy.reviewsEngine` in `content/copy.ts`.
+
 ## Checkout & payments
 
 

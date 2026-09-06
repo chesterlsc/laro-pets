@@ -70,6 +70,12 @@ export default async function ThankYouPage({ params, searchParams }: { params: P
             </ol>
           </div>}
 
+          {!confirming && (
+            <div className="flex flex-col gap-3 rounded-inner border border-border bg-bg p-5 md:flex-row md:items-center md:justify-between">
+              <div><p className="font-display text-[20px] font-bold">How’s the hunt going?</p><p className="text-[14px] text-muted">Once it arrives, tell other cat parents. Your order number adds a “Verified order” badge.</p></div>
+              <ButtonLink href={`/?order=${order.order_no}#reviews`} variant="secondary" size="md" icon="feather">Write a review</ButtonLink>
+            </div>
+          )}
           <p className="text-[14px] text-muted">Delivering to {order.address.line1}, {order.address.city}</p>
           <ButtonLink href="/" variant="ink" icon="arrow">Back to Laro Pets</ButtonLink>
         </div>

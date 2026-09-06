@@ -89,6 +89,9 @@ img { max-width: 100%; }
 [data-reveal="in"].js-reveal { animation: laro-reveal .55s cubic-bezier(.2, .9, .3, 1.2) both; }
 .fx-peek { animation: laro-peek 4s ease-in-out infinite; }
 .fx-paw { animation: laro-paw-fade .9s ease-out both; }
+@keyframes laro-grow { from { width: 0; } }
+.fx-grow { animation: laro-grow .9s cubic-bezier(.2, .8, .2, 1) both; }
+.fx-sparkle { animation: laro-paw-fade .8s ease-out both; }
 .fx-paw-spinner > svg { animation: laro-paw-pulse .9s ease-in-out infinite; }
 .fx-paw-spinner > svg:nth-child(2) { animation-delay: .15s; }
 .fx-paw-spinner > svg:nth-child(3) { animation-delay: .3s; }
@@ -134,7 +137,7 @@ img { max-width: 100%; }
 
 @media (prefers-reduced-motion: reduce) {
   .fx-wiggle-hover:hover, .fx-float, .fx-peek, .fx-paw, .fx-paw-spinner > svg, .fx-loading-cat,
-  .fx-intro, .fx-intro-paw, .fx-intro-shadow,
+  .fx-intro, .fx-intro-paw, .fx-intro-shadow, .fx-grow, .fx-sparkle,
   .fx-chase-cat, .fx-chase-stalk, .fx-chase-stalk > g, .fx-chase-pounce, .fx-chase-sit, .fx-chase-mat, .fx-chase-feather, .fx-chase-paw,
   [data-reveal].js-reveal { animation: none !important; }
   [data-reveal].js-reveal { opacity: 1; transform: none; }

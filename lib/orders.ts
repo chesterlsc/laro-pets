@@ -32,6 +32,7 @@ type Store = {
   updateWhere(id: string, patch: Partial<Order>, expect: OrderStatus): Promise<Order | null>;
   /** Most recent pending COD order from this mobile since `sinceIso`, or null. */
   findRecentCod(mobile: string, sinceIso: string): Promise<Order | null>;
+  getByNo(orderNo: string): Promise<Order | null>;
 };
 
 const cache = new Map<string, Order>();
@@ -48,6 +49,7 @@ function supabaseStore(url: string, key: string): Store {
       const r = await sb.from('orders').select('*').eq('status', 'pending_cod').eq('customer->>mobile', mobile).gte('created_at', sinceIso).order('created_at', { ascending: false }).limit(1).maybeSingle();
       fail(r.error); return (r.data as Order | null) ?? null;
     },
+    async getByNo(orderNo) { const r = await sb.from('orders').select('*').eq('order_no', orderNo).maybeSingle(); fail(r.error); return (r.data as Order | null) ?? null; },
   };
 }
 
@@ -64,6 +66,7 @@ function webhookStore(url: string): Store {
     async update(id, patch) { const cur = cache.get(id); if (!cur) return null; const next = { ...cur, ...patch }; await post(next, 'order.updated'); return next; },
     async updateWhere(id, patch, expect) { const cur = cache.get(id); if (!cur || cur.status !== expect) return null; const next = { ...cur, ...patch }; await post(next, 'order.updated'); return next; },
     async findRecentCod(mobile, sinceIso) { return [...cache.values()].filter((o) => o.status === 'pending_cod' && o.customer.mobile === mobile && o.created_at >= sinceIso).pop() ?? null; },
+    async getByNo(orderNo) { return [...cache.values()].find((o) => o.order_no === orderNo) ?? null; },
   };
 }
 
@@ -84,6 +87,7 @@ function fileStore(): Store {
       rows[i] = { ...rows[i], ...patch }; await writeAll(rows); return rows[i];
     },
     async findRecentCod(mobile, sinceIso) { return (await readAll()).filter((o) => o.status === 'pending_cod' && o.customer.mobile === mobile && o.created_at >= sinceIso).pop() ?? null; },
+    async getByNo(orderNo) { return (await readAll()).find((o) => o.order_no === orderNo) ?? null; },
   };
 }
 
@@ -143,6 +147,7 @@ export const getOrder = async (id: string) => (UUID.test(id) ? getStore().get(id
 export const markPaid = (id: string, paymentRef: string) => getStore().updateWhere(id, { status: 'paid', payment_ref: paymentRef }, 'pending_payment');
 export const markCancelled = (id: string) => getStore().updateWhere(id, { status: 'cancelled' }, 'pending_payment');
 export const setPaymentRef = (id: string, ref: string) => getStore().update(id, { payment_ref: ref });
+export const getOrderByNo = (orderNo: string) => getStore().getByNo(orderNo);
 export const findRecentCod = (mobile: string, minutes: number) => getStore().findRecentCod(mobile, new Date(Date.now() - minutes * 60_000).toISOString());
 
 /** Human-readable lines shared by emails, PayMongo and the thank-you page. Amounts in pesos per unit. */

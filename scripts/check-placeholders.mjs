@@ -6,7 +6,6 @@ const read = (p) => readFileSync(new URL(p, import.meta.url), 'utf8');
 const src = read('../content/placeholders.ts');
 const found = [...src.matchAll(/(\w+):\s*'([^']*\[[^']*\][^']*)'/g)].map((m) => `${m[1]} = ${m[2]}`);
 if (/\[Proposed policy\]/.test(read('../content/policies.ts'))) found.push('policies: guarantee / warranty still marked "[Proposed policy]"');
-if (/sample:\s*true/.test(read('../content/reviews.ts'))) found.push('reviews: sample reviews still enabled (content/reviews.ts sample: true)');
 const site = process.env.NEXT_PUBLIC_SITE_URL ?? '';
 if (!site || /localhost/.test(site)) found.push(`NEXT_PUBLIC_SITE_URL is ${site ? site : 'unset'} — canonical, OG and PayMongo redirects will point at localhost`);
 

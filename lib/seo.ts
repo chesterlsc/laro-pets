@@ -3,7 +3,7 @@ import { createElement } from 'react';
 import { copy } from '@/content/copy';
 import { images } from '@/content/images';
 import { product } from '@/content/product';
-import { reviews } from '@/content/reviews';
+import type { Summary } from '@/lib/reviews';
 import { peso } from '@/lib/pricing';
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
@@ -21,9 +21,7 @@ export const homeMetadata: Metadata = {
   twitter: { card: 'summary_large_image', title, description },
 };
 
-export function productJsonLd() {
-  const n = reviews.items.length;
-  const avg = reviews.items.reduce((s, r) => s + r.stars, 0) / Math.max(n, 1);
+export function productJsonLd(summary?: Pick<Summary, 'count' | 'average'>) {
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -54,9 +52,9 @@ export function productJsonLd() {
         returnFees: 'https://schema.org/FreeReturn',
       },
     },
-    // `reviews.sample` is a literal `true` today; the cast keeps the branch alive for when the owner flips it.
-    ...((reviews.sample as boolean) === false && {
-      aggregateRating: { '@type': 'AggregateRating', ratingValue: Number(avg.toFixed(1)), reviewCount: n },
+    // Only real, approved customer reviews feed the rating Google sees.
+    ...(summary && summary.count >= 1 && {
+      aggregateRating: { '@type': 'AggregateRating', ratingValue: summary.average, reviewCount: summary.count, bestRating: 5, worstRating: 1 },
     }),
   };
 }

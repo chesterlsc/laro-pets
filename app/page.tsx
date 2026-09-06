@@ -17,19 +17,21 @@ import { Faq } from '@/components/sections/Faq';
 import { FinalCta } from '@/components/sections/FinalCta';
 import { Footer } from '@/components/sections/Footer';
 import { ViewItem } from '@/components/ViewItem';
+import { getReviewSummaryCached } from '@/lib/reviews';
 
 export const metadata: Metadata = homeMetadata;
 
-export default function Home() {
+export default async function Home() {
+  const summary = await getReviewSummaryCached();
   return (
     <VideoModalProvider>
-      <JsonLd data={productJsonLd()} />
+      <JsonLd data={productJsonLd(summary)} />
       <JsonLd data={videoJsonLd()} />
       <ViewItem />
       <AnnouncementBar />
       <Header />
       <main>
-        <Hero />
+        <Hero summary={summary} />
         <Marquee />
         <SeeItInAction />
         <HowItWorks />

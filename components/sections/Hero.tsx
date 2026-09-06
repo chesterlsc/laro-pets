@@ -1,5 +1,5 @@
 import { Icon, Stars } from '@/components/icons';
-import { reviews } from '@/content/reviews';
+import type { Summary } from '@/lib/review-schema';
 import { ButtonLink, Container, Sticker } from '@/components/ui';
 import { copy } from '@/content/copy';
 import { product } from '@/content/product';
@@ -16,7 +16,10 @@ function Float({ className, delay, children }: { className: string; delay: numbe
   return <span className={`fx-float absolute z-[3] ${className}`} style={{ animationDelay: `${delay}s` }}>{children}</span>;
 }
 
-export function Hero() {
+export function Hero({ summary }: { summary?: Summary }) {
+  const rated = !!summary && summary.count >= 5;
+  const ratingText = rated ? copy.reviewsEngine.heroLine(summary!.average, summary!.count) : '';
+  const ratingStars = rated ? Math.round(summary!.average) : 0;
   return (
     <section className="bg-bg pt-2 pb-10 xl:pt-10 xl:pb-[72px]">
       <Container>
@@ -42,10 +45,10 @@ export function Hero() {
                 <span className="font-display text-[40px] font-bold leading-none text-ink">{solo}</span>
                 <span className="text-[13px] font-bold text-muted">{hero.priceNoteMobile.pre}<span className="text-primary">{bundle}</span>{hero.priceNoteMobile.post}</span>
               </span>
-              {!reviews.sample && (
+              {rated && (
                 <span className="flex flex-col items-end gap-1">
-                  <Stars size={15} label={hero.ratingMobile} />
-                  <span className="text-[11px] font-bold text-muted">{hero.ratingMobile}</span>
+                  <Stars size={15} count={ratingStars} label={ratingText} />
+                  <span className="text-[11px] font-bold text-muted">{ratingText}</span>
                 </span>
               )}
             </div>
@@ -54,10 +57,10 @@ export function Hero() {
               <span className="font-display text-[52px] font-bold leading-none text-ink">{solo}</span>
               <span className="flex flex-col gap-1">
                 <span className="text-[15px] font-extrabold text-primary">{hero.priceNoteDesktop}</span>
-                {!reviews.sample && (
+                {rated && (
                   <span className="flex items-center gap-2">
-                    <Stars size={15} label={hero.ratingDesktop} />
-                    <span className="text-[13px] font-bold text-muted">{hero.ratingDesktop}</span>
+                    <Stars size={15} count={ratingStars} label={ratingText} />
+                    <span className="text-[13px] font-bold text-muted">{ratingText}</span>
                   </span>
                 )}
               </span>
