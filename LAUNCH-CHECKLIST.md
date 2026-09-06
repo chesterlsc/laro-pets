@@ -1,5 +1,7 @@
 # Laro Pets — production-readiness checklist
 
+**Live (staging) deployment:** https://laro-pets.vercel.app — Vercel project `laro-pets`, deployed from `main`. It runs with `LARO_ALLOW_PLACEHOLDERS=1`, which bypasses the placeholder gate; remove that variable once the placeholders are filled so a real launch build is enforced. No order store is configured yet, so the API refuses orders on purpose until Supabase keys are added.
+
 ## 1. Blockers before taking real orders
 
 - **Set a durable, readable order store before enabling any payment method.** `lib/orders.ts:78-85` silently falls back to a write-only Sheets store (`get()` reads an in-process Map, `:34,:55`) or an ephemeral `/tmp` file on Vercel (`:63`) with only a `console.warn`. Orders can then 404 on `/thank-you/[orderId]` (`page.tsx:16-17`) and the PayMongo webhook 404s (`app/api/webhooks/paymongo/route.ts:29-30`), so paid orders never flip to `paid` and no emails go out. Run `supabase/schema.sql`, set `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` in Vercel Production, and place one test COD order on the deployed URL and check the row.
@@ -11,7 +13,7 @@
 
 ## 2. Configure before launch (owner supplies keys/facts)
 
-- **`NEXT_PUBLIC_SITE_URL`** must be the https domain in Vercel Production + Preview. It defaults to `http://localhost:3000` in `lib/seo.ts:8`, `app/robots.ts:3`, `app/sitemap.ts:4`, `lib/paymongo.ts:5` (success/cancel URLs `:15-16`) and `lib/email.ts:7`; nothing fails the build if unset.
+- **`NEXT_PUBLIC_SITE_URL`** is set to `https://laro-pets.vercel.app` on Vercel (Production + Preview). Change it when you attach your own domain. It must be the https domain in Vercel Production + Preview. It defaults to `http://localhost:3000` in `lib/seo.ts:8`, `app/robots.ts:3`, `app/sitemap.ts:4`, `lib/paymongo.ts:5` (success/cancel URLs `:15-16`) and `lib/email.ts:7`; nothing fails the build if unset.
 - **Resend:** verify the sending domain (`lib/email.ts:12` sends from `orders@<host>`), set `RESEND_API_KEY` and `STORE_OWNER_EMAIL`; without them `lib/email.ts:54` only logs. Send failures are swallowed (`:61-62`), so confirm one test order arrives. The Supabase `orders` table (index at `supabase/schema.sql:19`) is the source of truth, not the inbox.
 - **PayMongo (only if launching online payments):** complete business activation/KYB, enable GCash/Maya/card on the account (otherwise session creation fails with the generic 502 at `checkout/paymongo/route.ts:20`), set `PAYMONGO_SECRET_KEY` + the matching-mode `PAYMONGO_WEBHOOK_SECRET` (`lib/paymongo.ts:33-41` holds one secret), register the live webhook for `checkout_session.payment.paid` only, keep production Deployment Protection off, and complete the unchecked README.md:238 DoD (test-mode session to `paid`). If not activating yet, remove "GCash, Maya, Visa, Mastercard" from `copy.ts:84` / `policies.ts:18` and the "Secured by PayMongo" line (`DeliveryForm.tsx:103`).
 - **Vercel WAF rate limit on `POST /api/orders` and `/api/checkout/paymongo`** (e.g. 5/min per IP). Neither route has any limit, honeypot or CAPTCHA (`app/api/orders/route.ts:8-19`); each COD request writes a row and sends up to two emails (`lib/email.ts:59-60`).

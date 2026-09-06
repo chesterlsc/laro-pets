@@ -1,4 +1,6 @@
-# Laro Pets — Laro Hunt Mat store
+# Laro Pets
+
+**Staging:** https://laro-pets.vercel.app (Vercel project `laro-pets`, auto-deploys from `main`; `LARO_ALLOW_PLACEHOLDERS=1` is set there until the placeholders are filled). — Laro Hunt Mat store
 
 Single-product Next.js 15 store (App Router, TypeScript, Tailwind v4) selling the Laro Hunt Mat in the Philippines: landing page, guest checkout with COD / GCash / Maya / cards via PayMongo, order storage in Supabase (or a Google Sheet), confirmation emails via Resend.
 
