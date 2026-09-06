@@ -1,5 +1,4 @@
 'use client';
-import { useSearchParams } from 'next/navigation';
 import { useState, useSyncExternalStore, type FormEvent } from 'react';
 import { Icon, Star, Stars } from '@/components/icons';
 import { Button, Chip } from '@/components/ui';
@@ -16,6 +15,8 @@ const VOTED_KEY = 'laro-helpful';
 const readVoted = (): string[] => { try { return JSON.parse(localStorage.getItem(VOTED_KEY) ?? '[]'); } catch { return []; } };
 const noSub = () => () => {};
 const votedSnapshot = () => localStorage.getItem(VOTED_KEY) ?? '[]';
+// ?order=LP-… from the thank-you page, read without useSearchParams so the list still server-renders on the static home page.
+const orderParam = () => (new URLSearchParams(window.location.search).get('order') ?? '').toUpperCase();
 
 function fmtDate(iso: string) { return new Date(iso).toLocaleDateString('en-PH', { month: 'short', year: 'numeric' }); }
 
@@ -123,9 +124,9 @@ function ReviewForm({ initialOrder, onDone }: { initialOrder: string; onDone: ()
 }
 
 export function ReviewsClient({ items: initial, summary }: { items: Review[]; summary: Summary }) {
-  const params = useSearchParams();
-  const initialOrder = (params.get('order') ?? '').toUpperCase();
-  const [writing, setWriting] = useState(Boolean(initialOrder));
+  const initialOrder = useSyncExternalStore(noSub, orderParam, () => '');
+  const [writingState, setWriting] = useState<boolean | null>(null);
+  const writing = writingState ?? Boolean(initialOrder);
   const [stars, setStars] = useState(0);
   const [sort, setSort] = useState<Sort>('newest');
   const [extra, setExtra] = useState<Review[]>([]);

@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { copy } from '@/content/copy';
 import { Reveal } from '@/components/fx/Reveal';
 import { Eyebrow, H2, Section } from '@/components/ui';
@@ -19,9 +18,7 @@ export async function Reviews() {
           <H2>{r.h2}</H2>
         </div>
         {summary.count > 0 && <Reveal><RatingSummary summary={summary} /></Reveal>}
-        <Suspense fallback={null}>
-          <ReviewsClient items={items} summary={summary} />
-        </Suspense>
+        <ReviewsClient items={items} summary={summary} />
       </div>
     </Section>
   );
